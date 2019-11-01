@@ -1,5 +1,5 @@
 # parameters
-ARG REPO_NAME="<REPO_NAME_HERE>"
+ARG REPO_NAME="dt-device-health"
 
 # ==================================================>
 # ==> Do not change this code
@@ -61,4 +61,4 @@ ENV DT_MODULE_NAME "${REPO_NAME}"
 # <==================================================
 
 # maintainer
-LABEL maintainer="<YOUR_FULL_NAME> (<YOUR_EMAIL_ADDRESS>)"
+LABEL maintainer="Andrea F. Daniele (afdaniele@ttic.edu)"
