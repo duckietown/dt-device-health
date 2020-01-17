@@ -1,3 +1,4 @@
+import sys
 from .health import run, just_check
 
 def main():

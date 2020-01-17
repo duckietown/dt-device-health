@@ -4,38 +4,42 @@ import subprocess
 
 
 def command_output(cmd):
-    res = subprocess.check_output(cmd)
-    lines = res.split('\n')
+    cmd = ' '.join(cmd + [' 2>/dev/null ||', 'echo', 'ND'])
+    res = subprocess.check_output(cmd, shell=True)
+    lines = res.decode('utf-8').split('\n')
     res = {}
     for l in lines:
         if not l:
             continue
         if '=' in l:
             i = l.index('=')
-
             res[l[:i]] = l[i + 1:]
     return res
 
 
 def go():
-    health = {}
-    health['clock'] = {}
+    health = {
+        'throttled': '0',
+        'clock': {},
+        'volts': {},
+        'mem': {}
+    }
     VC = "vcgencmd"
     for src in "arm core h264 isp v3d uart pwm emmc pixel vec hdmi dpi".split():
         cmd = [VC, "measure_clock", src]
         res = command_output(cmd)
-        health['clock'][src] = list(res.values())[0]
+        vals = list(res.values())
+        health['clock'][src] = vals[0] if vals else 'ND'
 
-    health['volts'] = {}
     for a in "core sdram_c sdram_i sdram_p".split():
         cmd = [VC, "measure_volts", a]
         res = command_output(cmd)
-        health['volts'][a] = list(res.values())[0]
+        vals = list(res.values())
+        health['volts'][a] = vals[0] if vals else 'ND'
 
     cmd = [VC, "measure_temp"]
     health.update(command_output(cmd))
 
-    health['mem'] = {}
     for a in "arm gpu".split():
         cmd = [VC, 'get_mem', a]
         health['mem'].update(command_output(cmd))
@@ -93,7 +97,7 @@ def go():
     return health
 
 
-from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, HTTPServer
 
 
 class S(BaseHTTPRequestHandler):
@@ -102,7 +106,7 @@ class S(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header('Content-type', 'application/json')
         # support CORS
-        origin = self.headers.getheader('Origin', None)
+        origin = self.headers.get('Origin', None)
         if origin:
             self.send_header('Access-Control-Allow-Origin', origin)
         # close headers
@@ -111,7 +115,7 @@ class S(BaseHTTPRequestHandler):
     def do_GET(self):
         self._set_headers()
         health = go()
-        res = json.dumps(health, indent=4)
+        res = json.dumps(health, indent=4).encode()
         self.wfile.write(res)
 
     def do_HEAD(self):
@@ -129,7 +133,7 @@ def run(server_class=HTTPServer, handler_class=S, port=80):
     sys.stdout.flush()
     server_address = ('', port)
     httpd = server_class(server_address, handler_class)
-    sys.stderr.write('\n\nListening on port %s...' % port)
+    sys.stderr.write('\n\nListening on port %s...\n' % port)
     httpd.serve_forever()
 
 
