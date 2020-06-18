@@ -19,7 +19,8 @@ def command_output(cmd):
         for c in ['=', ':']:
             if c in line:
                 i = line.index(c)
-                res[line[:i].strip()] = line[i + 1:].strip()
+                j = i if '(' not in line else line.index('(')
+                res[line[:j].strip()] = line[i + 1:].strip()
                 break
     return res
 
@@ -27,6 +28,7 @@ def command_output(cmd):
 def go():
     health = {
         'throttled': '0',
+        'frequency': '0',
         'volts': {},
         'mem': {},
         'swap': {},
@@ -42,6 +44,9 @@ def go():
         health['volts'][a] = vals[0] if vals else 'ND'
     # get Temperature
     cmd = [vc, "measure_temp"]
+    health.update(command_output(cmd))
+    # get CPU frequency
+    cmd = [vc, "measure_clock", "arm"]
     health.update(command_output(cmd))
     # get Memory stats
     mem_stats = psutil.virtual_memory()
