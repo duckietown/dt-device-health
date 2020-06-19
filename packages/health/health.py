@@ -206,16 +206,14 @@ class HealthAPIServer(HTTPServer, DTProcess):
 
     def _health_check(self):
         while not self.is_shutdown():
-            if time.time() - self._last_time_checked <= (1.0 / HEALTH_CHECKER_FREQUENCY_HZ):
-                continue
-            # ---
-            t = get_throttled()['throttled_humans']
-            if t['throttling-now'] or t['freq-capped-now'] or t['under-voltage-now']:
-                set_module_unhealthy()
-            else:
-                set_module_healthy()
-            # ---
-            self._last_time_checked = time.time()
+            if (time.time() - self._last_time_checked) > (1.0 / HEALTH_CHECKER_FREQUENCY_HZ):
+                t = get_throttled()['throttled_humans']
+                if t['throttling-now'] or t['freq-capped-now'] or t['under-voltage-now']:
+                    set_module_unhealthy()
+                else:
+                    set_module_healthy()
+                # ---
+                self._last_time_checked = time.time()
             time.sleep(1.0)
 
 
