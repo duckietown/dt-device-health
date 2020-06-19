@@ -4,8 +4,17 @@ import sys
 import json
 import subprocess
 import psutil
-from .raspberry_pi import get_raspberrypi_info
+import re
+import time
+from threading import Thread
 from http.server import BaseHTTPRequestHandler, HTTPServer
+
+from .raspberry_pi import get_raspberrypi_info
+from dt_class_utils import DTProcess
+from dt_module_utils import set_module_healthy, set_module_unhealthy
+
+VC = "vcgencmd"
+HEALTH_CHECKER_FREQUENCY_HZ = 1.0 / 5.0  # once every 5 seconds
 
 
 def command_output(cmd):
@@ -25,6 +34,56 @@ def command_output(cmd):
     return res
 
 
+def get_firmware_info(cmd):
+    cmd = ' '.join(cmd + [' 2>/dev/null ||', 'echo', 'ND'])
+    res = subprocess.check_output(cmd, shell=True)
+    lines = res.decode('utf-8').split('\n')
+    data = {
+        'date': {
+            'year': -1,
+            'day': -1,
+            'month': "ND"
+        },
+        'version': "ND"
+    }
+    # ---
+    try:
+        date_str, _, version_str, _ = lines
+        month, day, year, _ = re.sub('\s+', ' ', date_str.strip()).split(' ')
+        data['date']['year'] = int(year)
+        data['date']['month'] = month
+        data['date']['day'] = int(day)
+        _, version, *_ = version_str.split(' ')
+        data['version'] = version
+    finally:
+        return data
+
+
+def get_throttled():
+    # get throttled
+    health = dict()
+    health.update(command_output([VC, 'get_throttled']))
+    # expand throttled
+    tint = int(health['throttled'], 0)
+    bits = {
+        'under-voltage-now': 0,
+        'freq-capped-now': 1,
+        'throttling-now': 2,
+        'under-voltage-occurred': 16,
+        'freq-capped-occurred': 17,
+        'throttling-occurred': 18
+    }
+    throttled = health['throttled_humans'] = {}
+    for k, n in bits.items():
+        a = tint & (1 << n)
+        throttled[k] = a > 0
+    # ---
+    return health
+
+
+STATIC_FIRMWARE_INFO = get_firmware_info([VC, 'version'])
+
+
 def go():
     health = {
         'throttled': '0',
@@ -33,20 +92,20 @@ def go():
         'mem': {},
         'swap': {},
         'disk': {},
+        'firmware': {},
         'hardware': {}
     }
-    vc = "vcgencmd"
     # get Voltage
     for a in ["core", "sdram_i"]:
-        cmd = [vc, "measure_volts", a]
+        cmd = [VC, "measure_volts", a]
         res = command_output(cmd)
         vals = list(res.values())
         health['volts'][a] = vals[0] if vals else 'ND'
     # get Temperature
-    cmd = [vc, "measure_temp"]
+    cmd = [VC, "measure_temp"]
     health.update(command_output(cmd))
     # get CPU frequency
-    cmd = [vc, "measure_clock", "arm"]
+    cmd = [VC, "measure_clock", "arm"]
     health.update(command_output(cmd))
     # get Memory stats
     mem_stats = psutil.virtual_memory()
@@ -74,48 +133,36 @@ def go():
         'used': disk_stats.used,
         'free': disk_stats.free
     })
+    # get firmware info
+    health['firmware'] = STATIC_FIRMWARE_INFO
     # add (unknown) to hardware fields (will be replaced later)
     health['hardware'] = get_raspberrypi_info(None)
     # get Raspberry Pi board model
     cpuinfo = command_output(['cat', '/proc/cpuinfo'])
     if 'Revision' in cpuinfo:
         health['hardware'] = get_raspberrypi_info(cpuinfo['Revision'])
-    # get Throttled
-    health.update(command_output([vc, 'get_throttled']))
-    # expand Throttled
-    tint = int(health['throttled'], 0)
-    bits = {
-        'under-voltage-now': 0,
-        'freq-capped-now': 1,
-        'throttling-now': 2,
-        'under-voltage-occurred': 16,
-        'freq-capped-occurred': 17,
-        'throttling-occurred': 18
-    }
-    throttled = health['throttled_humans'] = {}
-    for k, n in bits.items():
-        a = tint & (1 << n)
-        throttled[k] = a > 0
+    # get throttled
+    health.update(get_throttled())
     # define human-readable status
     error = False
     warning = False
     msgs = []
-    if throttled['throttling-now']:
+    if health['throttled_humans']['throttling-now']:
         msgs.append('Error: PI is throttled')
         error = True
-    if throttled['freq-capped-now']:
+    if health['throttled_humans']['freq-capped-now']:
         msgs.append('Error: Frequency is capped')
         error = True
-    if throttled['under-voltage-now']:
+    if health['throttled_humans']['under-voltage-now']:
         msgs.append('Error: Under-voltage')
         error = True
-    if throttled['throttling-occurred']:
+    if health['throttled_humans']['throttling-occurred']:
         msgs.append('Warning: PI throttling occurred in the past.')
         warning = True
-    if throttled['freq-capped-occurred']:
+    if health['throttled_humans']['freq-capped-occurred']:
         msgs.append('Warning: Frequency is capped occurred in the past.')
         warning = True
-    if throttled['under-voltage-occurred']:
+    if health['throttled_humans']['under-voltage-occurred']:
         msgs.append('Warning: Under-voltage occurred in the past.')
         warning = True
     # define overall status
@@ -125,7 +172,8 @@ def go():
     return health
 
 
-class HealthAPI(BaseHTTPRequestHandler):
+class HealthAPIRequestHandler(BaseHTTPRequestHandler):
+
     def _set_headers(self):
         # open headers
         self.send_response(200)
@@ -147,12 +195,31 @@ class HealthAPI(BaseHTTPRequestHandler):
         self._set_headers()
 
 
-def run(server_class=HTTPServer, handler_class=HealthAPI, port=80):
-    health = go()
-    res = json.dumps(health, indent=4)
-    print(res)
-    print('')
-    sys.stdout.flush()
+class HealthAPIServer(HTTPServer, DTProcess):
+
+    def __init__(self, *args, **kwargs):
+        HTTPServer.__init__(self, *args, **kwargs)
+        DTProcess.__init__(self, name='health-api')
+        self._last_time_checked = 0
+        self._health_checker = Thread(target=self._health_check)
+        self._health_checker.start()
+
+    def _health_check(self):
+        while not self.is_shutdown():
+            if time.time() - self._last_time_checked <= (1.0 / HEALTH_CHECKER_FREQUENCY_HZ):
+                continue
+            # ---
+            t = get_throttled()['throttled_humans']
+            if t['throttling-now'] or t['freq-capped-now'] or t['under-voltage-now']:
+                set_module_unhealthy()
+            else:
+                set_module_healthy()
+            # ---
+            self._last_time_checked = time.time()
+            time.sleep(1.0)
+
+
+def run(server_class=HealthAPIServer, handler_class=HealthAPIRequestHandler, port=80):
     server_address = ('', port)
     httpd = server_class(server_address, handler_class)
     sys.stderr.write('\n\nListening on port %s...\n' % port)
