@@ -9,9 +9,10 @@ import time
 from threading import Thread
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
-from .raspberry_pi import get_raspberrypi_info
 from dt_class_utils import DTProcess
 from dt_module_utils import set_module_healthy, set_module_unhealthy
+
+from .hardware import get_hardware_info
 
 VC = "vcgencmd"
 HEALTH_CHECKER_FREQUENCY_HZ = 1.0 / 5.0  # once every 5 seconds
@@ -100,13 +101,17 @@ def go():
         cmd = [VC, "measure_volts", a]
         res = command_output(cmd)
         vals = list(res.values())
-        health['volts'][a] = vals[0] if vals else 'ND'
+        health['volts'][a] = float(vals[0][:-1]) if vals else 'ND'
     # get Temperature
     cmd = [VC, "measure_temp"]
     health.update(command_output(cmd))
+    if health['temp'] != 'ND':
+        health['temp'] = float(health['temp'][:-2])
     # get CPU frequency
     cmd = [VC, "measure_clock", "arm"]
     health.update(command_output(cmd))
+    if health['frequency'] != 'ND':
+        health['frequency'] = float(health['frequency'])
     # get Memory stats
     mem_stats = psutil.virtual_memory()
     health['mem'].update({
@@ -136,11 +141,11 @@ def go():
     # get firmware info
     health['firmware'] = STATIC_FIRMWARE_INFO
     # add (unknown) to hardware fields (will be replaced later)
-    health['hardware'] = get_raspberrypi_info(None)
+    health['hardware'] = get_hardware_info(None)
     # get Raspberry Pi board model
     cpuinfo = command_output(['cat', '/proc/cpuinfo'])
     if 'Revision' in cpuinfo:
-        health['hardware'] = get_raspberrypi_info(cpuinfo['Revision'])
+        health['hardware'] = get_hardware_info(cpuinfo['Revision'])
     # get throttled
     health.update(get_throttled())
     # define human-readable status
