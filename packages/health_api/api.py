@@ -8,11 +8,16 @@ __all__ = [
     'HealthAPI'
 ]
 
+__battery__ = None
+
 
 class HealthAPI(Flask):
 
-    def __init__(self):
+    def __init__(self, app):
+        global __battery__
         super(HealthAPI, self).__init__(__name__)
+        # keep a link to the Battery object
+        __battery__ = app.battery
         # register blueprints
         self.register_blueprint(api)
         # apply CORS settings
@@ -30,9 +35,16 @@ def _all():
     return jsonify(res)
 
 
+@api.route('/battery/history')
+def _battery_history():
+    return jsonify({'history': __battery__.history() if __battery__ else []})
+
+
 @api.route('/<string:resource>')
 def _partial(resource: str):
     try:
         return jsonify(cached_resource(resource))
-    finally:
+    except KeyError:
         abort(404)
+    except BaseException as e:
+        return str(e)

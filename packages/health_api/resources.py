@@ -1,11 +1,12 @@
 import re
-import psutil
 import subprocess
 
+import psutil
+
 from health_api import logger
-from health_api.utils import command_output
 from health_api.hardware import get_hardware_info
 from health_api.knowledge_base import KnowledgeBase
+from health_api.utils import command_output
 
 VC = "vcgencmd"
 
@@ -193,6 +194,23 @@ def get_throttled():
     return res
 
 
+def get_battery():
+    # this is a fake resource provider, the battery drivers will write to the Knowledge Base
+    return {
+        'battery': {
+            'temperature': 'ND',
+            'cell_voltage': 'ND',
+            'input_voltage': 'ND',
+            'current': 'ND',
+            'cycle_count': 'ND',
+            'percentage': 'ND',
+            'time_to_empty': 'ND',
+            'usb_out_1_voltage': 'ND',
+            'usb_out_2_voltage': 'ND'
+        }
+    }
+
+
 resources = {
     'volts': get_voltage,
     'temp': get_temperature,
@@ -203,7 +221,8 @@ resources = {
     'disk': get_disk,
     'firmware': get_firmware,
     'hardware': get_hardware,
-    'status': get_throttled
+    'status': get_throttled,
+    'battery': get_battery
 }
 
 resource_ttl = {
@@ -216,7 +235,8 @@ resource_ttl = {
     'disk': 10,
     'firmware': -1,
     'hardware': -1,
-    'status': 1
+    'status': 1,
+    'battery': -1
 }
 
 all_resources = resource_ttl.keys()

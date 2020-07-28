@@ -1,0 +1,2 @@
+BATTERY_VID = "04d8"
+BATTERY_PID = "ecb7"
