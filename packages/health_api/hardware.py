@@ -287,7 +287,7 @@ RASPBERRY_PI_MODELS = {
         "Model": "4 Model B",
         "PCB Revision": "1.1",
         "Memory": "1 GB",
-        "Frequency": 1.5 * GHz,
+        "Frequency": 2.0 * GHz,
         "Notes": "(Mfg by Sony)"
     },
     "b03111": {
@@ -295,7 +295,7 @@ RASPBERRY_PI_MODELS = {
         "Model": "4 Model B",
         "PCB Revision": "1.1",
         "Memory": "2 GB",
-        "Frequency": 1.5 * GHz,
+        "Frequency": 2.0 * GHz,
         "Notes": "(Mfg by Sony)"
     },
     "b03112": {
@@ -303,7 +303,7 @@ RASPBERRY_PI_MODELS = {
         "Model": "4 Model B",
         "PCB Revision": "1.2",
         "Memory": "2 GB",
-        "Frequency": 1.5 * GHz,
+        "Frequency": 2.0 * GHz,
         "Notes": "(Mfg by Sony)"
     },
     "c03111": {
@@ -311,7 +311,7 @@ RASPBERRY_PI_MODELS = {
         "Model": "4 Model B",
         "PCB Revision": "1.1",
         "Memory": "4 GB",
-        "Frequency": 1.5 * GHz,
+        "Frequency": 2.0 * GHz,
         "Notes": "(Mfg by Sony)"
     },
     "c03112": {
@@ -319,7 +319,7 @@ RASPBERRY_PI_MODELS = {
         "Model": "4 Model B",
         "PCB Revision": "1.2",
         "Memory": "4 GB",
-        "Frequency": 1.5 * GHz,
+        "Frequency": 2.0 * GHz,
         "Notes": "(Mfg by Sony)"
     },
     "d03114": {
@@ -327,7 +327,7 @@ RASPBERRY_PI_MODELS = {
         "Model": "4 Model B",
         "PCB Revision": "1.4",
         "Memory": "8 GB",
-        "Frequency": 1.5 * GHz,
+        "Frequency": 2.0 * GHz,
         "Notes": "(Mfg by Sony)"
     }
 }
