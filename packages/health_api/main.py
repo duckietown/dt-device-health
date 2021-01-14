@@ -18,7 +18,7 @@ class HealthAPIApp(DTProcess):
         self.watchdog = Thread(target=health_watchdog)
         self.watchdog.start()
         # spin the battery drivers
-        cback = lambda d: KnowledgeBase.set('battery', {'battery': d}, -1)
+        cback = lambda d: KnowledgeBase.set('battery', {'battery': {'present': True, **d}}, -1)
         self.battery = Battery(cback, self.logger)
         self.register_shutdown_callback(self.battery.shutdown)
         self.battery.start()

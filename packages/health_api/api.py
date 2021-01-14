@@ -31,7 +31,8 @@ api = Blueprint('api', __name__)
 def _all():
     res = {}
     for resource in all_resources:
-        res.update(cached_resource(resource))
+        value = cached_resource(resource)
+        res.update(value)
     return jsonify(res)
 
 
