@@ -1,9 +1,13 @@
 from health_api import logger
 from health_api.knowledge_base import KnowledgeBase
 from health_api.boards import get_board
-
+from robot import get_robot
 
 machine = get_board()
+
+# add robot components to the knowledge base
+robot = get_robot()
+KnowledgeBase.set("components", {"components": robot.serialize_components()}, -1)
 
 resources = {
     'volts': machine.get_voltage,
@@ -15,7 +19,8 @@ resources = {
     'firmware': machine.get_firmware,
     'hardware': machine.get_hardware,
     'status': machine.get_throttled,
-    'battery': machine.get_battery
+    'battery': machine.get_battery,
+    'components': lambda: ["asd"]
 }
 
 resource_ttl = {
@@ -28,7 +33,8 @@ resource_ttl = {
     'firmware': -1,
     'hardware': -1,
     'status': 1,
-    'battery': -1
+    'battery': -1,
+    'components': -1
 }
 
 all_resources = resource_ttl.keys()
