@@ -3,5 +3,5 @@
 # this is used to talk to the battery
 pyserial
 
-# this is for the NVidia Jetson boards
+# this is for the Nvidia Jetson boards
 jetson-stats

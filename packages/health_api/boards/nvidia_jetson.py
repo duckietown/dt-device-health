@@ -123,7 +123,7 @@ class NvidiaJetson(GenericMachine):
         res = {'hardware': self._default_hardware_info()}
         # get Jetson board model
         compatible = self.get_compatible()
-        res['hardware']['board'] = 'NVidia Jetson'
+        res['hardware']['board'] = 'Nvidia Jetson'
         for model in self.MODELS:
             if model in compatible:
                 info = self.MODELS[model]
