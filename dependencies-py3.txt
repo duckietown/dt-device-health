@@ -2,6 +2,7 @@
 
 # this is used to talk to the battery
 pyserial
+pyyaml
 
 # this is for the Nvidia Jetson boards
 jetson-stats

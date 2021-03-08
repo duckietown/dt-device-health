@@ -1,8 +1,7 @@
-import os
 import logging
+
+from health_api.constants import DEBUG
 
 logging.basicConfig()
 logger = logging.getLogger('HealthAPI:API')
-logger.setLevel(
-    logging.DEBUG if os.environ.get('DEBUG', '0').lower() in ['1', 'yes', 'true'] else logging.INFO
-)
+logger.setLevel(logging.DEBUG if DEBUG else logging.INFO)
