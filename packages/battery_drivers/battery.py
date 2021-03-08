@@ -7,6 +7,7 @@ from threading import Thread
 from logging import Logger
 
 from dt_class_utils import DTReminder
+from serial.tools.list_ports import grep as serial_grep
 
 from .constants import BATTERY_VID, BATTERY_PID
 from .history import BatteryHistory
@@ -83,13 +84,8 @@ class Battery:
           }
 
     def _find_device(self):
-        cmd = ['find_device_by_vid_pid', '{}:{}'.format(BATTERY_VID, BATTERY_PID)]
-        # find USB devices
-        results = subprocess.check_output(cmd)
-        self._devices = [
-            '/dev/{}'.format(devname) for devname in results.decode('utf-8').splitlines()
-            if devname.startswith('tty')
-        ]
+        ports = serial_grep("VID:PID={}:{}".format(BATTERY_VID, BATTERY_PID))
+        self._devices = [p.device for p in ports]  # ['/dev/ttyACM0', ...]
 
     def _chew_on_data(self):
         if self._data:
