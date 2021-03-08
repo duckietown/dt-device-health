@@ -77,6 +77,3 @@ LABEL org.duckietown.label.module.type="${REPO_NAME}" \
     org.duckietown.label.maintainer="${MAINTAINER}"
 # <== Do not change the code above this line
 # <==================================================
-
-# install utility script to find devices given VID:PID pair
-COPY assets/scripts/find_device_by_vid_pid /usr/local/bin
