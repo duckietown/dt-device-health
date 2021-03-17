@@ -17,10 +17,11 @@ resources = {
     'cpu': machine.get_cpu,
     'disk': machine.get_disk,
     'firmware': machine.get_firmware,
+    'software': machine.get_software,
     'hardware': machine.get_hardware,
     'status': machine.get_throttled,
     'battery': machine.get_battery,
-    'components': lambda: ["asd"]
+    'components': lambda: []
 }
 
 resource_ttl = {
@@ -31,6 +32,7 @@ resource_ttl = {
     'cpu': 1,
     'disk': 10,
     'firmware': -1,
+    'software': -1,
     'hardware': -1,
     'status': 1,
     'battery': -1,

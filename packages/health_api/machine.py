@@ -1,7 +1,11 @@
 import abc
+import datetime
+import json
+
 import psutil
 
-from health_api.constants import MHz
+from health_api.constants import MHz, DISK_IMAGE_STATS_FILE
+from health_api import logger
 
 
 class GenericMachine(abc.ABC):
@@ -164,11 +168,72 @@ class GenericMachine(abc.ABC):
         }
 
     @staticmethod
+    def get_software():
+        """
+        Returns:
+
+            {
+                "software": {
+                    "base": {
+                        "type": <str, {"Nvidia Jetpack", "HypriotOS"}>,
+                        "version": <str, semantic_version>
+                    },
+                    "date": {
+                        "day": <int, 1-31>,
+                        "month": <int, 1-12>,
+                        "year": <int>,
+                    },
+                    "version": <str, semantic_version>
+                }
+            }
+        """
+        try:
+            with open(DISK_IMAGE_STATS_FILE, 'rt') as fin:
+                stats = json.load(fin)
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            logger.error(str(e))
+            return GenericMachine._default_software_info()
+        # parse stats
+        date = datetime.datetime.fromtimestamp(stats['stamp'])
+        # compile output
+        return {
+            "software": {
+                "base": {
+                    "type": stats['base_type'],
+                    "version": stats['base_version'],
+                },
+                "date": {
+                    "day": date.day,
+                    "month": date.month,
+                    "year": date.year,
+                },
+                "version": stats['version']
+            }
+        }
+
+    @staticmethod
     def get_compatible():
         # get device tree base compatible
         with open('/sys/firmware/devicetree/base/compatible', 'rt') as fin:
             compatible = fin.read().replace('\x00', '')
         return compatible
+
+    @staticmethod
+    def _default_software_info():
+        return {
+            "software": {
+                "base": {
+                    "type": "ND",
+                    "version": "ND"
+                },
+                "date": {
+                    "day": 0,
+                    "month": 0,
+                    "year": 0,
+                },
+                "version": "ND"
+            }
+        }
 
     @staticmethod
     def _default_hardware_info():
