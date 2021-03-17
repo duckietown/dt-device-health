@@ -63,6 +63,12 @@ def _trigger(trigger: str):
         set_trigger(trigger, 'health-api')
     except FileNotFoundError as e:
         return jsonify({'status': 'error', 'message': str(e)})
+    # special case: trigger == shutdown
+    if trigger == 'shutdown':
+        # shutdown the battery as well
+        timeout = request.args.get('timeout', default=20)
+        __battery__.turn_off(timeout)
+    # ---
     return jsonify({'status': 'ok'})
 
 
