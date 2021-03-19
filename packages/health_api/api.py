@@ -59,8 +59,9 @@ def _trigger(trigger: str):
     if given_token != right_token:
         return jsonify({'status': 'needs-confirmation', 'token': right_token})
     # set trigger
+    value = request.args.get('value', default='health-api')
     try:
-        set_trigger(trigger, 'health-api')
+        set_trigger(trigger, value)
     except FileNotFoundError as e:
         return jsonify({'status': 'error', 'message': str(e)})
     # special case: trigger == shutdown
