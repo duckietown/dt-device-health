@@ -139,7 +139,7 @@ class Battery:
                             # ---
                             if self._command is not None:
                                 # there is a command to be sent, send it and continue
-                                for _ in range(3):
+                                for _ in range(6):
                                     dev.write(self._command)
                                     dev.flush()
                                 self._command = None
