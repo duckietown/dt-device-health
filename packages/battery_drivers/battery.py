@@ -1,8 +1,10 @@
+import dataclasses
 import re
 import time
 import traceback
 from logging import Logger
 from threading import Thread
+from typing import Callable, Optional
 
 import serial
 import yaml
@@ -13,6 +15,28 @@ from .constants import BATTERY_PCB16_READY_VID, BATTERY_PCB16_READY_PID, BATTERY
 from .history import BatteryHistory
 
 KELVIN_TO_CELSIUS = lambda k: k - 273.15
+
+
+@dataclasses.dataclass
+class BatteryInteraction:
+    name: str
+    command: bytes
+    check: Callable
+    callback: Optional[Callable] = None
+    answer: Optional[dict] = None
+    active: bool = True
+
+    def join(self):
+        while True:
+            if not self.active:
+                return
+            time.sleep(0.1)
+
+    def complete(self, answer: Optional[dict]):
+        self.answer = answer
+        self.active = False
+        if self.callback is not None:
+            self.callback(self.answer)
 
 
 #
@@ -39,7 +63,12 @@ class Battery:
         self._info = None
         self._data = None
         self._device = None
-        self._command = None
+        self._interaction: Optional[BatteryInteraction] = BatteryInteraction(
+            name="get_info",
+            command=b'??',
+            check=lambda d: 'FirmwareVersion' in d,
+            callback=lambda d: setattr(self, '_info', self._format_info(d))
+        )
         self._is_shutdown = False
         self._logger = logger
         if not callable(callback):
@@ -67,10 +96,17 @@ class Battery:
         self._is_shutdown = True
         self.join()
 
-    def turn_off(self, timeout: int = 20):
+    def turn_off(self, timeout: int = 20, wait: bool = False, callback: Optional[Callable] = None):
         #   This is a battery shutdown, the power will be cut off after `timeout` seconds
-        timeout = f'{timeout}'.zfill(2)
-        self._command = f'Q{timeout}'.encode('utf-8')
+        timeout_str = f'{timeout}'.zfill(2)
+        self._interaction = BatteryInteraction(
+            name="turn_off",
+            command=f'Q{timeout_str}'.encode('utf-8'),
+            check=lambda d: d.get('TTL(sec)', None) == timeout,
+            callback=callback
+        )
+        if wait:
+            self._interaction.join()
 
     @property
     def info(self):
@@ -100,7 +136,7 @@ class Battery:
 
     def _read_next(self, dev, quiet: bool = True):
         try:
-            raw = dev.read_until().decode('utf-8')
+            raw = dev.read_until().decode('utf-8', 'ignore')
             cleaned = re.sub(r"\x00\s*", "", raw).rstrip()
             cleaned = re.sub(r"-\s+", "-", cleaned)
             try:
@@ -137,31 +173,38 @@ class Battery:
                             if self._is_shutdown:
                                 return
                             # ---
-                            if self._command is not None:
-                                # there is a command to be sent, send it and continue
-                                for _ in range(6):
-                                    dev.write(self._command)
+                            if self._data is not None:
+                                # we were able to read from the battery at least once,
+                                # consume any pending interaction
+                                if self._interaction.active:
+                                    iname, icmd = self._interaction.name, self._interaction.command
+                                    # there is a command to be sent, send it and continue
+                                    self._logger.debug(f"Pending interaction '{iname}' found. "
+                                                       f"Sending {str(icmd)} to the battery")
+                                    dev.write(self._interaction.command)
                                     dev.flush()
-                                self._command = None
-                                continue
-                            if self._data is not None and self._info is None:
-                                # we were able to read from the battery at least once, request ??
-                                dev.write(b'??')
-                                dev.flush()
                             # ---
                             try:
-                                line = self._read_next(dev, quiet=quiet)
-                                if line is None:
+                                parsed = self._read_next(dev, quiet=quiet)
+                                if parsed is None:
                                     continue
                                 # first time we read?
                                 if self._device is None:
                                     self._device = device
                                     self._logger.info('Battery found at {}.'.format(device))
-                                # distinguish between 'data' packet and answer to '??'
-                                if 'FirmwareVersion' in line:
-                                    self._info = self._format_info(line)
-                                elif 'SOC(%)' in line:
-                                    self.data = self._format_data(line)
+                                # distinguish between 'data' packet and others
+                                if 'SOC(%)' in parsed:
+                                    # this is a 'data' packet
+                                    self.data = self._format_data(parsed)
+                                elif self._interaction.active:
+                                    iname = self._interaction.name
+                                    self._logger.debug(f"Received (candidate) response to "
+                                                       f"interaction '{iname}': {str(parsed)}")
+                                    if self._interaction.check(parsed):
+                                        self._logger.debug(f"Received valid response to "
+                                                           f"interaction '{iname}': {str(parsed)}")
+                                        # complete interaction
+                                        self._interaction.complete(parsed)
                             except BaseException as e:
                                 if quiet:
                                     traceback.print_exc()

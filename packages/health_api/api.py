@@ -58,17 +58,18 @@ def _trigger(trigger: str):
     given_token = request.args.get('token', default=None)
     if given_token != right_token:
         return jsonify({'status': 'needs-confirmation', 'token': right_token})
-    # set trigger
     value = request.args.get('value', default='health-api')
-    try:
-        set_trigger(trigger, value)
-    except FileNotFoundError as e:
-        return jsonify({'status': 'error', 'message': str(e)})
     # special case: trigger == shutdown
     if trigger == 'shutdown':
-        # shutdown the battery as well
-        timeout = request.args.get('timeout', default=20)
-        __battery__.turn_off(timeout)
+        # shutdown the battery first, then the host
+        timeout = request.args.get('timeout', default=10)
+        __battery__.turn_off(timeout, callback=lambda _: set_trigger(trigger, value))
+    else:
+        # set trigger
+        try:
+            set_trigger(trigger, value)
+        except FileNotFoundError as e:
+            return jsonify({'status': 'error', 'message': str(e)})
     # ---
     return jsonify({'status': 'ok'})
 
