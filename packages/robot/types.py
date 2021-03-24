@@ -1,6 +1,6 @@
 import dataclasses
 from enum import IntEnum, Enum
-from typing import Dict, Union, List, Set
+from typing import Dict, Union, List, Set, Callable, Optional
 
 import smbus
 
@@ -97,6 +97,7 @@ class HardwareComponent:
     parent: Union['HardwareComponent', None] = None
     supported: bool = False
     detected: bool = False
+    detection_tests: Optional[List[Callable]] = None
 
     def as_dict(self, compact: bool = False):
         return {
@@ -138,6 +139,9 @@ class Robot:
                 except RuntimeError as e:
                     print(str(e))
                 component.detected = component.bus.has(component.address)
+            if component.detection_tests:
+                for test in component.detection_tests:
+                    component.detected = component.detected and test()
         # ---
         return components
 
