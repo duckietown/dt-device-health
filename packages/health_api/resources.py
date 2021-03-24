@@ -47,16 +47,18 @@ def cached_resource(resource):
         raise KeyError(resource)
     try:
         res = KnowledgeBase.get(resource)
-        logger.debug("Resource '{}':{}Using cached data.".format(
-            resource, ' ' * (12 - len(resource))
-        ))
+        # disabled, too noisy
+        # logger.debug("Resource '{}':{}Using cached data.".format(
+        #     resource, ' ' * (12 - len(resource))
+        # ))
         return res
     except KeyError:
         fcn = resources[resource]
         res = fcn()
-        logger.debug("Resource '{}':{}Fetching new data.".format(
-            resource, ' ' * (12 - len(resource))
-        ))
+        # disabled, too noisy
+        # logger.debug("Resource '{}':{}Fetching new data.".format(
+        #     resource, ' ' * (12 - len(resource))
+        # ))
         KnowledgeBase.set(resource, res, resource_ttl[resource])
         return res
 
