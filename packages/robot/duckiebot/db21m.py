@@ -1,3 +1,5 @@
+import os
+from functools import partial
 from typing import List
 
 from robot.types import Robot, HardwareComponent, I2CBus, BusType, ComponentType
@@ -47,7 +49,10 @@ class DB21M(Robot):
                 name="IMX219 Camera Module",
                 instance=0,
                 address="0x10",
-                supported=True
+                supported=True,
+                detection_tests=[
+                    partial(os.path.exists, "/dev/video0")
+                ]
             ),
             HardwareComponent(
                 bus=DB21M.I2C_HW_BUS_1,
