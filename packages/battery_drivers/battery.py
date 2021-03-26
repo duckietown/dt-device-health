@@ -96,13 +96,12 @@ class Battery:
         self._is_shutdown = True
         self.join()
 
-    def turn_off(self, timeout: int = 20, wait: bool = False, callback: Optional[Callable] = None):
+    def turn_off(self, wait: bool = False, callback: Optional[Callable] = None):
         #   This is a battery shutdown, the power will be cut off after `timeout` seconds
-        timeout_str = f'{timeout}'.zfill(2)
         self._interaction = BatteryInteraction(
             name="turn_off",
-            command=f'Q{timeout_str}'.encode('utf-8'),
-            check=lambda d: d.get('TTL(sec)', None) == timeout,
+            command="QQ".encode('utf-8'),
+            check=lambda d: d.get('QACK', None) is not None,
             callback=callback
         )
         if wait:
@@ -140,6 +139,10 @@ class Battery:
             cleaned = re.sub(r"\x00\s*", "", raw).rstrip()
             cleaned = re.sub(r"-\s+", "-", cleaned)
             try:
+                # TODO: response from battery is not JSON
+                # if "}{" present, get the first for checking shutdown ACK
+                if "}{" in cleaned:
+                    cleaned = cleaned.split("}{")[0] + "}"
                 parsed = yaml.load(cleaned, yaml.SafeLoader)
                 return parsed
             except yaml.YAMLError as e:
