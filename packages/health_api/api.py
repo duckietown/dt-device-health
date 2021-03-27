@@ -62,7 +62,8 @@ def _trigger(trigger: str):
     # special case: trigger == shutdown
     if trigger == 'shutdown':
         # shutdown the battery first, then the host
-        __battery__.turn_off(callback=lambda _: set_trigger(trigger, value))
+        timeout = request.args.get('timeout', default=10)
+        __battery__.turn_off(timeout, callback=lambda _: set_trigger(trigger, value))
     else:
         # set trigger
         try:

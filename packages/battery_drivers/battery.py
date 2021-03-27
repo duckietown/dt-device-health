@@ -96,14 +96,30 @@ class Battery:
         self._is_shutdown = True
         self.join()
 
-    def turn_off(self, wait: bool = False, callback: Optional[Callable] = None):
+    def turn_off(self, timeout: int = 20, wait: bool = False, callback: Optional[Callable] = None):
         #   This is a battery shutdown, the power will be cut off after `timeout` seconds
-        self._interaction = BatteryInteraction(
-            name="turn_off",
-            command="QQ".encode('utf-8'),
-            check=lambda d: d.get('QACK', None) is not None,
-            callback=callback
-        )
+
+        firmware_version = self.info.get("firmware_version")
+        # multi-firmware support
+        # TODO: create classes as version-handlers, parent for common-handlers
+        if firmware_version == "v2.0.0":
+            timeout_str = f'{timeout}'.zfill(2)
+            self._interaction = BatteryInteraction(
+                name="turn_off",
+                command=f'Q{timeout_str}'.encode('utf-8'),
+                check=lambda d: d.get('TTL(sec)', None) == timeout,
+                callback=callback,
+            )
+        elif firmware_version == "v2.0.1":
+            self._interaction = BatteryInteraction(
+                name="turn_off",
+                command="QQ".encode('utf-8'),
+                check=lambda d: d.get('QACK', None) is not None,
+                callback=callback
+            )
+        else:
+            self._logger.warning(f"Unknown/Unsupported battery firmware version: {firmware_version}")
+
         if wait:
             self._interaction.join()
 
