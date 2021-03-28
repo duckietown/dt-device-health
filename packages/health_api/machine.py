@@ -123,6 +123,7 @@ class GenericMachine(abc.ABC):
             {
                 "battery": {
                     "present": <bool>,
+                    "charging": <bool>,
                     "temperature": <float, celsius>,
                     "cell_voltage": <float, volt>,
                     "input_voltage": <float, volt>,
@@ -139,6 +140,7 @@ class GenericMachine(abc.ABC):
         return {
             'battery': {
                 'present': False,
+                'charging': False,
                 'temperature': 0.0,
                 'cell_voltage': 0.0,
                 'input_voltage': 0.0,
