@@ -153,6 +153,31 @@ class GenericMachine(abc.ABC):
             }
         }
 
+    @staticmethod
+    def get_battery_info():
+        """
+        Returns:
+            {
+                "boot": {
+                    "version": <str,numeric>,
+                    "date": <str,mm/dd/yy>,
+                    "pcb_version": <str,numeric>
+                },
+                "version": <str,semantic_version>,
+                "serial_number": <str>
+            }
+        """
+        # this is a fake resource provider, the battery drivers will write to the Knowledge Base
+        return {
+            "version": "ND",
+            "boot": {
+                "version": "ND",
+                "pcb_version": "ND",
+                "date": "ND"
+            },
+            "serial_number": "ND"
+        }
+
     def get_temperature(self):
         """
         Returns:

@@ -1,5 +1,5 @@
-import uuid
 import logging
+import uuid
 from typing import Union
 
 from flask import Flask, Blueprint, abort, jsonify, request
@@ -7,10 +7,10 @@ from flask_cors import CORS
 
 from battery_drivers import Battery
 from dt_triggers_utils import set_trigger
+from health_api.boards import get_board
 from health_api.constants import DEBUG
 from health_api.knowledge_base import KnowledgeBase
 from health_api.resources import all_resources, cached_resource
-
 
 __all__ = [
     'HealthAPI'
@@ -81,7 +81,7 @@ def _battery_history():
 
 @api.route('/battery/info')
 def _battery_info():
-    info = __battery__.info or {"FirmwareVersion": "ND", "BootData": "ND", "SerialNumber": "ND"}
+    info = __battery__.info or get_board().get_battery_info()
     return jsonify(info)
 
 

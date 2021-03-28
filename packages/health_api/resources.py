@@ -1,4 +1,3 @@
-from health_api import logger
 from health_api.knowledge_base import KnowledgeBase
 from health_api.boards import get_board
 from robot import get_robot
