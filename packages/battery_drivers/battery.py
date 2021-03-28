@@ -8,6 +8,7 @@ from typing import Callable, Optional
 
 import serial
 import yaml
+import semver
 from serial.tools.list_ports import grep as serial_grep
 
 from dt_class_utils import DTReminder
@@ -100,24 +101,27 @@ class Battery:
         #   This is a battery shutdown, the power will be cut off after `timeout` seconds
 
         firmware_version = self.info.get("firmware_version")
-        # multi-firmware support
-        # TODO: create classes as version-handlers, parent for common-handlers
-        if firmware_version == "v2.0.0":
-            timeout_str = f'{timeout}'.zfill(2)
-            self._interaction = BatteryInteraction(
-                name="turn_off",
-                command=f'Q{timeout_str}'.encode('utf-8'),
-                check=lambda d: d.get('TTL(sec)', None) == timeout,
-                callback=callback,
-            )
-        elif firmware_version == "v2.0.1":
-            self._interaction = BatteryInteraction(
-                name="turn_off",
-                command="QQ".encode('utf-8'),
-                check=lambda d: d.get('QACK', None) is not None,
-                callback=callback
-            )
-        else:
+        try:
+            
+            # multi-firmware support
+            if semver.compare(firmware_version[1:], "2.0.0") == 0:
+                timeout_str = f'{timeout}'.zfill(2)
+                self._interaction = BatteryInteraction(
+                    name="turn_off",
+                    command=f'Q{timeout_str}'.encode('utf-8'),
+                    check=lambda d: d.get('TTL(sec)', None) == timeout,
+                    callback=callback,
+                )
+            elif semver.compare(firmware_version[1:], "2.0.1") >= 0:
+                self._interaction = BatteryInteraction(
+                    name="turn_off",
+                    command="QQ".encode('utf-8'),
+                    check=lambda d: d.get('QACK', None) is not None,
+                    callback=callback
+                )
+            else:
+                raise Exception()
+        except:
             self._logger.warning(f"Unknown/Unsupported battery firmware version: {firmware_version}")
 
         if wait:

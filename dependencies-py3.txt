@@ -6,3 +6,6 @@ pyyaml
 
 # this is for the Nvidia Jetson boards
 jetson-stats
+
+# support for different battery firmware versions
+semver
