@@ -1,7 +1,7 @@
 import re
 import subprocess
 
-from typing import Dict, Optional, Union
+from typing import Dict, Optional
 
 from health_api.constants import MB, GB, MHz, GHz
 from health_api.machine import GenericMachine

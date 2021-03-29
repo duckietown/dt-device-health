@@ -123,6 +123,7 @@ class GenericMachine(abc.ABC):
             {
                 "battery": {
                     "present": <bool>,
+                    "charging": <bool>,
                     "temperature": <float, celsius>,
                     "cell_voltage": <float, volt>,
                     "input_voltage": <float, volt>,
@@ -139,6 +140,7 @@ class GenericMachine(abc.ABC):
         return {
             'battery': {
                 'present': False,
+                'charging': False,
                 'temperature': 0.0,
                 'cell_voltage': 0.0,
                 'input_voltage': 0.0,
@@ -149,6 +151,31 @@ class GenericMachine(abc.ABC):
                 'usb_out_1_voltage': 0.0,
                 'usb_out_2_voltage': 0.0
             }
+        }
+
+    @staticmethod
+    def get_battery_info():
+        """
+        Returns:
+            {
+                "boot": {
+                    "version": <str,numeric>,
+                    "date": <str,mm/dd/yy>,
+                    "pcb_version": <str,numeric>
+                },
+                "version": <str,semantic_version>,
+                "serial_number": <str>
+            }
+        """
+        # this is a fake resource provider, the battery drivers will write to the Knowledge Base
+        return {
+            "version": "ND",
+            "boot": {
+                "version": "ND",
+                "pcb_version": "ND",
+                "date": "ND"
+            },
+            "serial_number": "ND"
         }
 
     def get_temperature(self):

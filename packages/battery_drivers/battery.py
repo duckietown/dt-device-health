@@ -57,6 +57,19 @@ class BatteryInteraction:
 #       "usb_out_2_voltage": <float>
 #   }
 #
+#
+#   The 'info' property has the following shape:
+#
+#   {
+#       "boot": {
+#           "version": <str,numeric>,
+#           "date": <str,mm/dd/yy>,
+#           "pcb_version": <str,numeric>
+#       },
+#       "version": <str,semantic_version>,
+#       "serial_number": <str>
+#   }
+#
 class Battery:
 
     def __init__(self, callback, logger: Logger = None):
@@ -149,8 +162,13 @@ class Battery:
         self._devices = [p.device for p in ports]  # ['/dev/ttyACM0', ...]
 
     def _chew_on_data(self):
-        if self._data:
-            self._callback(self._data)
+        if self._data and self._info:
+            out = {
+                "present": True,
+                "charging": self._data['input_voltage'] >= (5.0 / 2),
+                **self._data
+            }
+            self._callback(out)
             self._history.add(self._data)
 
     def _read_next(self, dev, quiet: bool = True):
@@ -261,11 +279,11 @@ class Battery:
         boot_data = str(info["BootData"])
         firmware_version = str(info["FirmwareVersion"])
         major, minor, patch, *_ = firmware_version + "000"
-        dd, mm, yy = boot_data[3:5], boot_data[5:7], boot_data[7:9]
+        yy, mm, dd = boot_data[3:5], boot_data[5:7], boot_data[7:9]
         return {
-            "firmware_version": f"v{major}.{minor}.{patch}",
+            "version": f"{major}.{minor}.{patch}",
             "boot": {
-                "code_version": boot_data[0],
+                "version": boot_data[0],
                 "pcb_version": boot_data[1:3],
                 "date": f"{mm}/{dd}/{yy}"
             },
