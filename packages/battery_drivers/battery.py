@@ -112,10 +112,9 @@ class Battery:
 
     def turn_off(self, timeout: int = 20, wait: bool = False, callback: Optional[Callable] = None):
         #   This is a battery shutdown, the power will be cut off after `timeout` seconds
-
         firmware_version = self.info.get("version")
+        # noinspection PyBroadException
         try:
-            
             # multi-firmware support
             if semver.compare(firmware_version, "2.0.0") == 0:
                 timeout_str = f'{timeout}'.zfill(2)
@@ -134,8 +133,8 @@ class Battery:
                 )
             else:
                 raise Exception()
-        except:
-            self._logger.warning(f"Unknown/Unsupported battery firmware version: {firmware_version}")
+        except Exception:
+            self._logger.warning(f"Unknown/Unsupported battery firmware: {firmware_version}")
 
         if wait:
             self._interaction.join()
