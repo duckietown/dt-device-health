@@ -188,7 +188,8 @@ class Battery:
                 return None
         except BaseException as e:
             if quiet:
-                traceback.print_exc()
+                # do not print, it would swamp the logs
+                pass
             else:
                 raise e
 
