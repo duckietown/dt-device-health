@@ -60,7 +60,7 @@ def _trigger(trigger: str):
         return jsonify({'status': 'needs-confirmation', 'token': right_token})
     value = request.args.get('value', default='health-api')
     # special case: trigger == shutdown
-    if trigger == 'shutdown':
+    if trigger == 'shutdown' and __battery__ is not None:
         # shutdown the battery first, then the host
         timeout = request.args.get('timeout', default=10)
         __battery__.turn_off(timeout, callback=lambda _: set_trigger(trigger, value))
@@ -81,7 +81,7 @@ def _battery_history():
 
 @api.route('/battery/info')
 def _battery_info():
-    info = __battery__.info or get_board().get_battery_info()
+    info = __battery__.info if __battery__ is not None else get_board().get_battery_info()
     return jsonify(info)
 
 

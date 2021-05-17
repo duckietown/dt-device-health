@@ -176,7 +176,6 @@ class Battery:
             cleaned = re.sub(r"\x00\s*", "", raw).rstrip()
             cleaned = re.sub(r"-\s+", "-", cleaned)
             try:
-                # TODO: response from battery is not JSON
                 # if "}{" present, get the first for checking shutdown ACK
                 if "}{" in cleaned:
                     cleaned = cleaned.split("}{")[0] + "}"
