@@ -1,8 +1,19 @@
 import os
+from datetime import datetime
 from functools import partial
+from os.path import isfile
+from pathlib import Path
 from typing import List
 
-from robot.types import Robot, HardwareComponent, I2CBus, BusType, ComponentType
+from dt_robot_utils import get_robot_name
+from robot.types import Robot, HardwareComponent, I2CBus, BusType, ComponentType, Calibration
+
+
+CALIBRATIONS_DIR = "/data/config/calibrations/"
+
+CAM_INT_CALIB_FILE = os.path.join(CALIBRATIONS_DIR, "camera_intrinsic", f"{get_robot_name()}.yaml")
+CAM_EXT_CALIB_FILE = os.path.join(CALIBRATIONS_DIR, "camera_extrinsic", f"{get_robot_name()}.yaml")
+KINEM_CALIB_FILE = os.path.join(CALIBRATIONS_DIR, "kinematics", f"{get_robot_name()}.yaml")
 
 
 class DB21M(Robot):
@@ -50,9 +61,40 @@ class DB21M(Robot):
                 instance=0,
                 address="0x10",
                 supported=True,
+                calibration=Calibration(
+                    needed=True,
+                    completed=isfile(CAM_INT_CALIB_FILE) and isfile(CAM_EXT_CALIB_FILE),
+                    time=datetime.fromtimestamp(Path(CAM_EXT_CALIB_FILE).stat().st_mtime)
+                ),
                 detection_tests=[
                     partial(os.path.exists, "/dev/video0")
                 ]
+            ),
+            HardwareComponent(
+                bus=DB21M.I2C_HW_BUS_1,
+                type=ComponentType.MOTOR,
+                name="Left Motor Driver",
+                instance=0,
+                address="0x40",
+                supported=True,
+                calibration=Calibration(
+                    needed=True,
+                    completed=isfile(KINEM_CALIB_FILE),
+                    time=datetime.fromtimestamp(Path(KINEM_CALIB_FILE).stat().st_mtime)
+                )
+            ),
+            HardwareComponent(
+                bus=DB21M.I2C_HW_BUS_1,
+                type=ComponentType.MOTOR,
+                name="Right Motor Driver",
+                instance=0,
+                address="0x40",
+                supported=True,
+                calibration=Calibration(
+                    needed=True,
+                    completed=isfile(KINEM_CALIB_FILE),
+                    time=datetime.fromtimestamp(Path(KINEM_CALIB_FILE).stat().st_mtime)
+                )
             ),
             HardwareComponent(
                 bus=DB21M.I2C_HW_BUS_1,

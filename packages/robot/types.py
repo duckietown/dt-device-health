@@ -1,4 +1,5 @@
 import dataclasses
+from datetime import datetime
 from enum import IntEnum, Enum
 from typing import Dict, Union, List, Set, Callable, Optional
 
@@ -25,6 +26,7 @@ class ComponentType(Enum):
     CAMERA = "CSI Camera"
     BUS_MULTIPLEXER = "Bus Multiplexer"
     HAT = "Duckietown HAT"
+    MOTOR = "Motor Driver"
 
 
 @dataclasses.dataclass
@@ -88,6 +90,20 @@ Buses: Dict[str, Dict[int, Bus]]
 
 
 @dataclasses.dataclass
+class Calibration:
+    needed: bool = False
+    completed: bool = False
+    time: Optional[datetime] = None
+
+    def as_dict(self) -> Dict:
+        return {
+            "needed": self.needed,
+            "completed": self.needed,
+            "time": self.time.isoformat() if self.time else None
+        }
+
+
+@dataclasses.dataclass
 class HardwareComponent:
     bus: Union[Bus, None]
     type: ComponentType
@@ -97,6 +113,7 @@ class HardwareComponent:
     parent: Union['HardwareComponent', None] = None
     supported: bool = False
     detected: bool = False
+    calibration: Calibration = dataclasses.field(default_factory=Calibration)
     detection_tests: Optional[List[Callable]] = None
 
     def as_dict(self, compact: bool = False):
@@ -114,6 +131,7 @@ class HardwareComponent:
             "parent": self.parent.as_dict(compact=True) if self.parent else None,
             "supported": self.supported,
             "detected": self.detected,
+            "calibration": self.calibration.as_dict()
         }
 
 
