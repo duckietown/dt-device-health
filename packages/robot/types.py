@@ -1,4 +1,5 @@
 import dataclasses
+import os
 from datetime import datetime
 from enum import IntEnum, Enum
 from typing import Dict, Union, List, Set, Callable, Optional
@@ -10,6 +11,7 @@ class BusType(IntEnum):
     UNKNOWN = 0
     I2C = 1
     SPI = 2
+    USB = 3
 
     def as_dict(self) -> Dict:
         return {
@@ -27,6 +29,7 @@ class ComponentType(Enum):
     BUS_MULTIPLEXER = "Bus Multiplexer"
     HAT = "Duckietown HAT"
     MOTOR = "Motor Driver"
+    BATTERY = "Battery"
 
 
 @dataclasses.dataclass
@@ -84,6 +87,20 @@ class I2CBus(Bus):
             "parent": self.parent.as_dict() if self.parent else None,
             **self.type.as_dict()
         }
+
+
+@dataclasses.dataclass
+class USBBus(Bus):
+    number: int
+
+    def as_dict(self) -> Dict:
+        return {
+            "number": self.number,
+            **self.type.as_dict()
+        }
+
+    def has(self, address: Union[str, int]) -> bool:
+        return os.path.exists(f"/dev/ttyACM{address}")
 
 
 Buses: Dict[str, Dict[int, Bus]]

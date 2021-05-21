@@ -6,8 +6,8 @@ from pathlib import Path
 from typing import List
 
 from dt_robot_utils import get_robot_name
-from robot.types import Robot, HardwareComponent, I2CBus, BusType, ComponentType, Calibration
-
+from robot.types import Robot, HardwareComponent, I2CBus, BusType, ComponentType, Calibration, \
+    USBBus
 
 CALIBRATIONS_DIR = "/data/config/calibrations/"
 
@@ -20,6 +20,7 @@ class DB21M(Robot):
 
     I2C_HW_BUS_1 = I2CBus(BusType.I2C, 1)
     I2C_HW_BUS_2 = I2CBus(BusType.I2C, 2)
+    USB_BUS_1 = USBBus(BusType.USB, 1)
     I2C_SW_TEGRA_ADAPTER_BUS = I2CBus(BusType.I2C, 6)
     I2C_SW_FRONT_BUMPER_MUX_BUS_0 = I2CBus(BusType.I2C, 7, I2C_HW_BUS_1)
     I2C_SW_FRONT_BUMPER_MUX_BUS_1 = I2CBus(BusType.I2C, 8, I2C_HW_BUS_1)
@@ -39,7 +40,7 @@ class DB21M(Robot):
         i2c_mux = HardwareComponent(
             bus=DB21M.I2C_HW_BUS_1,
             type=ComponentType.BUS_MULTIPLEXER,
-            name="I2C Multiplexer",
+            name="Front Bumper",
             instance=0,
             address="0x70",
             supported=True
@@ -49,9 +50,18 @@ class DB21M(Robot):
             HardwareComponent(
                 bus=DB21M.I2C_HW_BUS_1,
                 type=ComponentType.HAT,
-                name="Duckietown Hat",
+                name="Duckietown HAT",
                 instance=0,
                 address="0x40",
+                supported=True
+            ),
+            HardwareComponent(
+                bus=DB21M.USB_BUS_1,
+                type=ComponentType.BATTERY,
+                name="DuckieBattery",
+                instance=0,
+                # this will check for /dev/ttyACM[0]
+                address="0",
                 supported=True
             ),
             HardwareComponent(
