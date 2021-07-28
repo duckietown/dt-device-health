@@ -46,9 +46,10 @@ class _KnowledgeBase(dict):
         # check the time elapsed
         ttl = self._ttl[key]
         elapsed = int(time.time() - self._update_time[key])
-        logger.debug("Resource '{}':{}Found in cache {} secs old. TTL is {}".format(
-            key, ' ' * (12 - len(key)), elapsed, ttl
-        ))
+        # disabled, too noisy
+        # logger.debug("Resource '{}':{}Found in cache {} secs old. TTL is {}".format(
+        #     key, ' ' * (12 - len(key)), elapsed, ttl
+        # ))
         return 0 <= ttl < elapsed
 
 
