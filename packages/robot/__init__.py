@@ -5,6 +5,7 @@ from robot.types import Robot
 
 
 def get_robot(configuration: Union[None, str] = None) -> Robot:
+    # TODO: add DB21J and DB21R
     from .duckiebot.db21m import DB21M
 
     known_robots = {
