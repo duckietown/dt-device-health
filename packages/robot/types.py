@@ -1,5 +1,6 @@
 import dataclasses
 import os
+import subprocess
 from datetime import datetime
 from enum import IntEnum, Enum
 from typing import Dict, Union, List, Set, Callable, Optional
@@ -12,6 +13,7 @@ class BusType(IntEnum):
     I2C = 1
     SPI = 2
     USB = 3
+    CSI = 4
 
     def as_dict(self) -> Dict:
         return {
@@ -30,6 +32,7 @@ class ComponentType(Enum):
     HAT = "Duckietown HAT"
     MOTOR = "Motor Driver"
     BATTERY = "Battery"
+    FLIGHT_CONTROLLER = "Flight Controller"
 
 
 @dataclasses.dataclass
@@ -103,6 +106,21 @@ class USBBus(Bus):
         return os.path.exists(f"/dev/ttyACM{address}")
 
 
+@dataclasses.dataclass
+class CSIBus(Bus):
+    number: int
+
+    def as_dict(self) -> Dict:
+        return {
+            "number": self.number,
+            **self.type.as_dict()
+        }
+
+    def has(self, address: Union[str, int]) -> bool:
+        print(subprocess.check_output(["vcgencmd", "get_camera"]).decode("utf-8"))
+        return "supported=1" in subprocess.check_output(["vcgencmd", "get_camera"]).decode("utf-8")
+
+
 Buses: Dict[str, Dict[int, Bus]]
 
 
@@ -168,15 +186,19 @@ class Robot:
     def _detect_components(components: List[HardwareComponent]) -> List[HardwareComponent]:
         # detect hardware
         for component in components:
-            if component.bus:
-                try:
-                    component.bus.detect()
-                except RuntimeError as e:
-                    print(str(e))
-                component.detected = component.bus.has(component.address)
             if component.detection_tests:
+                valid = 0
                 for test in component.detection_tests:
-                    component.detected = component.detected and test()
+                    if test():
+                        valid += 1
+                component.detected = valid == len(component.detection_tests)
+            else:
+                if component.bus:
+                    try:
+                        component.bus.detect()
+                    except RuntimeError as e:
+                        print(str(e))
+                    component.detected = component.bus.has(component.address)
         # ---
         return components
 

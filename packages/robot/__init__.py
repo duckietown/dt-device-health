@@ -7,14 +7,18 @@ from robot.types import Robot
 def get_robot(configuration: Union[None, str] = None) -> Robot:
     # TODO: add DB21J and DB21R
     from .duckiebot.db21m import DB21M
+    from .duckiedrone.dd21 import DD21
 
     known_robots = {
         'DB21M': DB21M,
+        'DD21': DD21,
     }
 
     if configuration is None:
         configuration = get_robot_configuration().name
         print(f"Robot configuration not given. Using '{configuration}' from robot.")
+
+
 
     robot = known_robots.get(configuration, Robot)
     return robot()
