@@ -4,6 +4,7 @@ import json
 
 import psutil
 
+from dt_robot_utils import get_robot_hardware, RobotHardware
 from health_api.constants import MHz, DISK_IMAGE_STATS_FILE
 from health_api import logger
 
@@ -240,9 +241,13 @@ class GenericMachine(abc.ABC):
 
     @staticmethod
     def get_compatible():
+        robot_hw = get_robot_hardware()
         # get device tree base compatible
-        with open('/sys/firmware/devicetree/base/compatible', 'rt') as fin:
-            compatible = fin.read().replace('\x00', '')
+        if robot_hw not in [RobotHardware.VIRTUAL]:
+            with open('/sys/firmware/devicetree/base/compatible', 'rt') as fin:
+                compatible = fin.read().replace('\x00', '')
+        else:
+            compatible = "duckietown,virtual"
         return compatible
 
     @staticmethod
