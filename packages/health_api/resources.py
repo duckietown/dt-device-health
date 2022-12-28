@@ -20,6 +20,7 @@ resources = {
     'hardware': machine.get_hardware,
     'status': machine.get_throttled,
     'battery': machine.get_battery,
+    'gpu': machine.get_gpu,
     'components': lambda: []
 }
 
@@ -35,6 +36,7 @@ resource_ttl = {
     'hardware': -1,
     'status': 1,
     'battery': -1,
+    'gpu': 1,
     'components': -1
 }
 

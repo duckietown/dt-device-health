@@ -146,6 +146,27 @@ class NvidiaJetson(GenericMachine):
             'status_msgs': []
         }
 
+    def get_gpu(self):
+        """
+        Returns:
+
+            {
+                "gpu": {
+                    "percentage": <int, percentage(used)>
+                    "temperature": <float, celsius>
+                    "power": <int, milliwatt>
+                }
+            }
+        """
+        res = {
+            "gpu": {
+                "percentage": 0,
+                "temperature": 0,
+                "power": 0
+            }
+        }
+        return res
+
 
 __all__ = [
     'NvidiaJetson'

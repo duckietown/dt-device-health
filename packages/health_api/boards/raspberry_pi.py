@@ -541,6 +541,25 @@ class RaspberryPi(GenericMachine):
                     break
         return res
 
+    def get_gpu(self):
+        """
+        Returns:
+
+            {
+                "gpu": {
+                    "percentage": <int, percentage(used)>
+                    "temperature": <float, celsius>
+                    "power": <int, milliwatt>
+                }
+            }
+        """
+        return {
+            "gpu": {
+                "percentage": 0,
+                "temperature": 0,
+                "power": 0
+            }
+        }
 
 __all__ = [
     'RaspberryPi'
