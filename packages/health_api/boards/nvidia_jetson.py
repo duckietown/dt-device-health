@@ -5,7 +5,9 @@ from datetime import datetime
 
 from health_api.constants import GB, GHz
 from health_api.machine import GenericMachine
-from health_api.tegrastats_api.utils import get_gpu_temp, get_gpu_usage, get_gpu_power
+
+from health_api.knowledge_base import KnowledgeBase
+
 
 class NvidiaJetson(GenericMachine):
     # NOTE: strings taken from here:
@@ -160,9 +162,9 @@ class NvidiaJetson(GenericMachine):
         """
         res = {
             "gpu": {
-                "percentage": get_gpu_usage(),
-                "temperature": get_gpu_temp(),
-                "power": get_gpu_power()
+                "percentage": KnowledgeBase.get("GPU_USAGE",0),
+                "temperature": KnowledgeBase.get("GPU_TEMP",0),
+                "power": KnowledgeBase.get("GPU_POWER",0)
             }
         }
         return res
