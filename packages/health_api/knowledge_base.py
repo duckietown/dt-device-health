@@ -8,7 +8,9 @@ from health_api import logger
 class NotSet:
     pass
 
+
 DEFAULT_TTL = 10
+
 
 class _KnowledgeBase(dict):
 
