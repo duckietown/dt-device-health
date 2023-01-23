@@ -330,7 +330,7 @@ class GenericMachine(abc.ABC):
             "gpu": {
                 "percentage": <int, percentage(used)>
                 "temperature": <float, celsius>
-                "power": <int, watt>
+                "power": <float, watt>
                 "memory": {
                     "total": <int, bytes>,
                     "used": <int, bytes>,
