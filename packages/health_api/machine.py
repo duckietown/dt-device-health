@@ -326,14 +326,19 @@ class GenericMachine(abc.ABC):
     def get_gpu(self):
         """
         Returns:
-
-            {
-                "gpu": {
+        {
+            "gpu": {
+                "percentage": <int, percentage(used)>
+                "temperature": <float, celsius>
+                "power": <int, milliwatt>
+                "memory": {
+                    "total": <int, bytes>,
+                    "used": <int, bytes>,
+                    "free": <int, bytes>,
                     "percentage": <int, percentage(used)>
-                    "temperature": <float, celsius>
-                    "power": <int, milliwatt>
                 }
             }
+        }
         """
         pass
 

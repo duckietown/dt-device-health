@@ -1,6 +1,6 @@
-import subprocess
 import os
 import re
+import subprocess
 
 from dt_class_utils import DTProcess
 
@@ -9,7 +9,6 @@ from health_api.knowledge_base import KnowledgeBase
 GPU_USAGE_RE = re.compile(r"GR3D_FREQ (\d+)%")
 GPU_TEMP_RE = re.compile(r"GPU@(\d+(?:\.\d+)?)C")
 GPU_POWER_RE = re.compile(r"POM_5V_GPU (\d+)/(\d+)")
-
 
 
 def run_tegrastats():
