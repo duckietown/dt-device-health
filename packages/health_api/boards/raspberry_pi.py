@@ -549,7 +549,7 @@ class RaspberryPi(GenericMachine):
                 "gpu": {
                     "percentage": <int, percentage(used)>
                     "temperature": <float, celsius>
-                    "power": <int, milliwatt>
+                    "power": <int, watt>
                 }
             }
         """
@@ -557,7 +557,13 @@ class RaspberryPi(GenericMachine):
             "gpu": {
                 "percentage": 0,
                 "temperature": 0,
-                "power": 0
+                "power": 0,
+                "memory": {
+                    "total": 0,
+                    "used": 0,
+                    "free": 0,
+                    "percentage": 0
+                }
             }
         }
 

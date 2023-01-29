@@ -6,7 +6,7 @@ from health_api.api import HealthAPI
 from health_api.constants import HEALTH_API_PORT
 from health_api.watchdog import health_watchdog
 from health_api.knowledge_base import KnowledgeBase
-from health_api.tegrastats_api.utils import run_tegrastats
+from health_api.tegrastats_api import run_tegrastats
 from battery_drivers import Battery
 from health_api.boards import board_has_gpu
 
