@@ -1,17 +1,18 @@
-import time
+import re
 
-def monitor_mem_usage():
-    while True:
-        with open('/proc/meminfo', 'r') as f:
-            mem_info = f.readlines()
+REGEXP = re.compile(r'(.+?):\s+(.+?) (.?)B')
 
-        mem_data = {}
-        for line in mem_info:
-            if 'MemTotal' in line:
-                mem_data['MemTotal'] = int(line.split()[1])
-            elif 'MemAvailable' in line:
-                mem_data['MemAvailable'] = int(line.split()[1])
-            elif 'NvMapMemUsed' in line:
-                mem_data['NvMapMemUsed'] = int(line.split()[1])
-        print(mem_data)
-        time.sleep(1)
+
+#In reference to: https://github.com/rbonghi/jetson_stats/blob/e6e140447640b53ae83797541635a6a58927a68e/jtop/core/memory.py#L29
+def poll_meminfo(path="/proc/meminfo"):
+    memory_info = {}
+    with open(path, "r") as fp:
+        for line in fp:
+            # Search line
+            match = REGEXP.search(line)
+            if match:
+                key = str(match.group(1).strip())
+                value = int(match.group(2).strip())
+                unit = str(match.group(3).strip())
+                memory_info[key] = {'val': value, 'unit': unit}
+    return memory_info
