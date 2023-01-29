@@ -166,11 +166,11 @@ class NvidiaJetson(GenericMachine):
             }
         }
         """
-        mem_info = poll_meminfo()
-        mem_used = mem_info.get("NvMapMemUsed", {}).get('val', 0)
-        mem_free = mem_info.get("NvMapMemFree", {}).get('val', 0)
+        mem_info = poll_meminfo()  # Value in kB
+        mem_used = mem_info.get("NvMapMemUsed", {}).get('val', 0) * 1024
+        mem_free = mem_info.get("NvMapMemFree", {}).get('val', 0) * 1024
         mem_total = mem_free + mem_used
-        mem_percentage = mem_used / mem_total * 100
+        mem_percentage = round(mem_used / mem_total * 100, 2)
         res = {
             "gpu": {
                 "percentage": KnowledgeBase.get("GPU_USAGE", 0),
