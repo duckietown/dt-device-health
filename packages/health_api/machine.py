@@ -322,6 +322,26 @@ class GenericMachine(abc.ABC):
     def get_throttled(self):
         pass
 
+    @abc.abstractmethod
+    def get_gpu(self):
+        """
+        Returns:
+        {
+            "gpu": {
+                "percentage": <int, percentage(used)>
+                "temperature": <float, celsius>
+                "power": <float, watt>
+                "memory": {
+                    "total": <int, bytes>,
+                    "used": <int, bytes>,
+                    "free": <int, bytes>,
+                    "percentage": <int, percentage(used)>
+                }
+            }
+        }
+        """
+        pass
+
     @classmethod
     @abc.abstractmethod
     def is_instance_of(cls) -> bool:
