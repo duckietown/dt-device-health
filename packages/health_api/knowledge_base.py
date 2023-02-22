@@ -9,12 +9,15 @@ class NotSet:
     pass
 
 
+DEFAULT_TTL = 10
+
+
 class _KnowledgeBase(dict):
 
     def __init__(self):
         super().__init__()
         # everything will be cached for 10 seconds by default
-        self._ttl = defaultdict(lambda: 10)
+        self._ttl = defaultdict(lambda: DEFAULT_TTL)
         self._update_time = {}
 
     def get(self, key: str = None, default: Any = NotSet) -> Union[Iterator[Tuple[str, Any]], Any]:
@@ -25,7 +28,7 @@ class _KnowledgeBase(dict):
                 raise KeyError(key)
         return self[key]
 
-    def set(self, key: str, value: Any, ttl: int):
+    def set(self, key: str, value: Any, ttl: int = DEFAULT_TTL):
         self[key] = value
         self._update_time[key] = time.time()
         self._ttl[key] = ttl

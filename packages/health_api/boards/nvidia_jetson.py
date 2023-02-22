@@ -1,10 +1,13 @@
 import os
-import jtop
 import subprocess
 from datetime import datetime
 
+import jtop
+
 from health_api.constants import GB, GHz
+from health_api.knowledge_base import KnowledgeBase
 from health_api.machine import GenericMachine
+from health_api.memory_util import poll_meminfo
 
 
 class NvidiaJetson(GenericMachine):
@@ -145,6 +148,43 @@ class NvidiaJetson(GenericMachine):
             'status': 'ok',
             'status_msgs': []
         }
+
+    def get_gpu(self):
+        """
+        Returns:
+        {
+            "gpu": {
+                "percentage": <int, percentage(used)>
+                "temperature": <float, celsius>
+                "power": <float, watt>
+                "memory": {
+                    "total": <int, bytes>,
+                    "used": <int, bytes>,
+                    "free": <int, bytes>,
+                    "percentage": <int, percentage(used)>
+                }
+            }
+        }
+        """
+        mem_info = poll_meminfo()  # Value in kB
+        mem_used = mem_info.get("NvMapMemUsed", {}).get('val', 0) * 1024
+        mem_free = mem_info.get("NvMapMemFree", {}).get('val', 0) * 1024
+        mem_total = mem_free + mem_used
+        mem_percentage = round(mem_used / mem_total * 100, 2)
+        res = {
+            "gpu": {
+                "percentage": KnowledgeBase.get("GPU_USAGE", 0),
+                "temperature": KnowledgeBase.get("GPU_TEMP", 0),
+                "power": KnowledgeBase.get("GPU_POWER", 0),
+                "memory": {
+                    "total": mem_total,
+                    "used": mem_used,
+                    "free": mem_free,
+                    "percentage": mem_percentage
+                }
+            }
+        }
+        return res
 
 
 __all__ = [
