@@ -96,7 +96,8 @@ class DB21M(Robot):
                     needed=True,
                     completed=isfile(KINEM_CALIB_FILE),
                     time=self.get_file_mtime(KINEM_CALIB_FILE)
-                )
+                ),
+                test_service_name="wheels_driver_node/tests/move_left",
             ),
             HardwareComponent(
                 bus=DB21M.I2C_HW_BUS_1,
@@ -109,7 +110,8 @@ class DB21M(Robot):
                     needed=True,
                     completed=isfile(KINEM_CALIB_FILE),
                     time=self.get_file_mtime(KINEM_CALIB_FILE)
-                )
+                ),
+                test_service_name="wheels_driver_node/tests/move_right",
             ),
             HardwareComponent(
                 bus=DB21M.I2C_HW_BUS_1,

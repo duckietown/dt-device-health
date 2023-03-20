@@ -132,6 +132,7 @@ class HardwareComponent:
     detected: bool = False
     calibration: Calibration = dataclasses.field(default_factory=Calibration)
     detection_tests: Optional[List[Callable]] = None
+    test_service_name: Optional[str] = None
 
     def as_dict(self, compact: bool = False):
         return {
@@ -148,7 +149,8 @@ class HardwareComponent:
             "parent": self.parent.as_dict(compact=True) if self.parent else None,
             "supported": self.supported,
             "detected": self.detected,
-            "calibration": self.calibration.as_dict()
+            "calibration": self.calibration.as_dict(),
+            "test_service_name": self.test_service_name if self.test_service_name else "",
         }
 
 
