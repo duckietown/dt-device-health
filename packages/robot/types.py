@@ -90,6 +90,47 @@ class I2CBus(Bus):
 
 
 @dataclasses.dataclass
+class I2CBusAnyOf(Bus):
+    """
+    Impersonated the I2C Bus hosting the given address
+    """
+    buses: List[I2CBus]
+    address: Union[str, int]
+    _matched: Optional[I2CBus] = None
+
+    @property
+    def number(self) -> int:
+        if not self._matched:
+            return self.buses[0].number
+        return self._matched.number
+
+    @property
+    def parent(self) -> Optional[I2CBus]:
+        if not self._matched:
+            return self.buses[0].parent
+        return self._matched.parent
+
+    def detect(self):
+        for bus in self.buses:
+            try:
+                if bus.has(self.address):
+                    self._matched = bus
+                    return
+            except RuntimeError as e:
+                print("WARNING", str(e))
+
+    def has(self, address: Union[str, int]) -> bool:
+        return self._matched is not None
+
+    def as_dict(self) -> Dict:
+        return {
+            "number": self.number,
+            "parent": self.parent.as_dict() if self.parent else None,
+            **self.type.as_dict()
+        }
+
+
+@dataclasses.dataclass
 class USBBus(Bus):
     number: int
 
@@ -172,7 +213,7 @@ class Robot:
                 try:
                     component.bus.detect()
                 except RuntimeError as e:
-                    print(str(e))
+                    print("WARNING", str(e))
                 component.detected = component.bus.has(component.address)
             if component.detection_tests:
                 for test in component.detection_tests:
