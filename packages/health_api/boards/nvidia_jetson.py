@@ -1,12 +1,13 @@
 import os
 import subprocess
 from datetime import datetime
+from typing import Optional, List
 
 import jtop
 
 from health_api.constants import GB, GHz
 from health_api.knowledge_base import KnowledgeBase
-from health_api.machine import GenericMachine
+from health_api.machine import GenericMachine, I2CBusDescriptor
 from health_api.memory_util import poll_meminfo
 
 
@@ -35,7 +36,7 @@ class NvidiaJetson(GenericMachine):
         "nvidia,p3449-0000-b00+p3448-0000-b00": {
             "release_date": "Q2 2019",
             "model": "Nano",
-            "revision": "B0x",
+            "revision": "B01",
             "memory": 4 * GB,
             "frequency": 1.4 * GHz,
             "gpu": True,
@@ -121,15 +122,36 @@ class NvidiaJetson(GenericMachine):
         compatible = cls.get_compatible()
         return compatible.startswith('nvidia,')
 
-    def get_hardware(self):
+    @classmethod
+    def is_4gb(cls):
+        board = cls.get_hardware()
+        return cls.is_instance_of() and board["hardware"]["model"] == "Nano"
+
+    @classmethod
+    def is_2gb(cls):
+        board = cls.get_hardware()
+        return cls.is_instance_of() and board["hardware"]["model"] == "Nano 2GB"
+
+    @classmethod
+    def is_A02(cls):
+        carrier_board: str = cls._get_carrier_board()
+        return cls.is_instance_of() and cls.is_4gb() and carrier_board == "A02"
+
+    @classmethod
+    def is_B01(cls):
+        carrier_board: str = cls._get_carrier_board()
+        return cls.is_instance_of() and cls.is_4gb() and carrier_board == "B01"
+
+    @classmethod
+    def get_hardware(cls):
         # get defaults
-        res = {'hardware': self._default_hardware_info()}
+        res = {'hardware': cls._default_hardware_info()}
         # get Jetson board model
-        compatible = self.get_compatible()
+        compatible = cls.get_compatible()
         res['hardware']['board'] = 'Nvidia Jetson'
-        for model in self.MODELS:
+        for model in cls.MODELS:
             if model in compatible:
-                info = self.MODELS[model]
+                info = cls.MODELS[model]
                 res['hardware'].update(info)
                 break
         # ---
@@ -185,6 +207,19 @@ class NvidiaJetson(GenericMachine):
             }
         }
         return res
+
+    @classmethod
+    def _get_carrier_board(cls) -> Optional[str]:
+        i2cbuses: List[I2CBusDescriptor] = NvidiaJetson.get_i2c_buses()
+        # find all i2c buses with "i2c-6-mux" in the name
+        mux6: int = len(list(filter(lambda b: b.name.startswith("i2c-6-mux"), i2cbuses)))
+        # the carrier board B01 has 2 of such buses, while A02 has none
+        if mux6 == 0:
+            return "A02"
+        elif mux6 == 2:
+            return "B01"
+        else:
+            raise ValueError(f"Carrier board has {mux6} 'i2c-6-mux' buses, unknown board.")
 
 
 __all__ = [
