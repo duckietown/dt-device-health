@@ -259,8 +259,8 @@ class GenericMachine(abc.ABC):
     @staticmethod
     def get_i2c_buses() -> List[I2CBusDescriptor]:
         buses: List[I2CBusDescriptor] = []
-        cmdout = subprocess.check_output(['i2cdetect', '-l'])
-        pattern = re.compile(rb'^i2c-([0-9]+)\s*\t(i2c)\s*\t([^t]+)\s*\t(.*)$')
+        cmdout = subprocess.check_output(['i2cdetect', '-l']).decode("utf8")
+        pattern = re.compile(r'^i2c-([0-9]+)\s*\t(i2c)\s*\t([^t]+)\s*\t(.*)$', re.MULTILINE)
         for i2cbus in pattern.finditer(cmdout):
             buses.append(I2CBusDescriptor(
                 number=int(i2cbus.group(1)),
