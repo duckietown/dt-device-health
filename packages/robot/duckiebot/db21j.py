@@ -10,6 +10,8 @@ class _DB21J_Base(DB21M):
 
     def _get_components(self) -> List[HardwareComponent]:
         components: List[HardwareComponent] = super()._get_components()
+        # make front bumper optional
+        self.FRONT_BUMPER_I2C_MUX.supported = False
         # on the DB21J we support a ToF connected both to the front bumper or the main i2c bus
         for i in range(len(components)):
             component = components[i]

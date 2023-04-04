@@ -76,9 +76,15 @@ class I2CBus(Bus):
         self._detections = found
 
     def has(self, address: Union[str, int]) -> bool:
+        # run the detection step if we have not done it yet
         if self._detections is None:
             self.detect()
+        # sanitize address
         address = hex(address) if isinstance(address, int) else address
+        # we don't count those devices that we see because connected to the parent
+        if self.parent and self.parent.has(address):
+            return False
+        # finally, we check for detections
         return address in self._detections
 
     def as_dict(self) -> Dict:
