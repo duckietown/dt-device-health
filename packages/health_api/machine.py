@@ -1,11 +1,22 @@
 import abc
+import dataclasses
 import datetime
 import json
+import re
+import subprocess
+from typing import List
 
 import psutil
 
 from health_api.constants import MHz, DISK_IMAGE_STATS_FILE
 from health_api import logger
+
+
+@dataclasses.dataclass
+class I2CBusDescriptor:
+    number: int
+    name: str
+    description: str
 
 
 class GenericMachine(abc.ABC):
@@ -244,6 +255,19 @@ class GenericMachine(abc.ABC):
         with open('/sys/firmware/devicetree/base/compatible', 'rt') as fin:
             compatible = fin.read().replace('\x00', '')
         return compatible
+
+    @staticmethod
+    def get_i2c_buses() -> List[I2CBusDescriptor]:
+        buses: List[I2CBusDescriptor] = []
+        cmdout = subprocess.check_output(['i2cdetect', '-l']).decode("utf8")
+        pattern = re.compile(r'^i2c-([0-9]+)\s*\t(i2c)\s*\t([^t]+)\s*\t(.*)$', re.MULTILINE)
+        for i2cbus in pattern.finditer(cmdout):
+            buses.append(I2CBusDescriptor(
+                number=int(i2cbus.group(1)),
+                name=i2cbus.group(3),
+                description=i2cbus.group(4)
+            ))
+        return buses
 
     @staticmethod
     def _default_software_info():

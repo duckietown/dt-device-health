@@ -7,6 +7,7 @@ def get_board():
         return NvidiaJetson()
     return RaspberryPi()
 
+
 def board_has_gpu():
     if NvidiaJetson.is_instance_of():
         return True
