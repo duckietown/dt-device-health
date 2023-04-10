@@ -79,10 +79,57 @@ class I2CBus(Bus):
         self._detections = found
 
     def has(self, address: Union[str, int]) -> bool:
+        # run the detection step if we have not done it yet
         if self._detections is None:
             self.detect()
+        # sanitize address
         address = hex(address) if isinstance(address, int) else address
+        # we don't count those devices that we see because connected to the parent
+        if self.parent and self.parent.has(address):
+            return False
+        # finally, we check for detections
         return address in self._detections
+
+    def as_dict(self) -> Dict:
+        return {
+            "number": self.number,
+            "parent": self.parent.as_dict() if self.parent else None,
+            **self.type.as_dict()
+        }
+
+
+@dataclasses.dataclass
+class I2CBusAnyOf(Bus):
+    """
+    Impersonated the I2C Bus hosting the given address
+    """
+    buses: List[I2CBus]
+    address: Union[str, int]
+    _matched: Optional[I2CBus] = None
+
+    @property
+    def number(self) -> int:
+        if not self._matched:
+            return self.buses[0].number
+        return self._matched.number
+
+    @property
+    def parent(self) -> Optional[I2CBus]:
+        if not self._matched:
+            return self.buses[0].parent
+        return self._matched.parent
+
+    def detect(self):
+        for bus in self.buses:
+            try:
+                if bus.has(self.address):
+                    self._matched = bus
+                    return
+            except RuntimeError as e:
+                print("WARNING", str(e))
+
+    def has(self, address: Union[str, int]) -> bool:
+        return self._matched is not None
 
     def as_dict(self) -> Dict:
         return {
@@ -186,19 +233,15 @@ class Robot:
     def _detect_components(components: List[HardwareComponent]) -> List[HardwareComponent]:
         # detect hardware
         for component in components:
+            if component.bus:
+                try:
+                    component.bus.detect()
+                except RuntimeError as e:
+                    print("WARNING", str(e))
+                component.detected = component.bus.has(component.address)
             if component.detection_tests:
-                valid = 0
                 for test in component.detection_tests:
-                    if test():
-                        valid += 1
-                component.detected = valid == len(component.detection_tests)
-            else:
-                if component.bus:
-                    try:
-                        component.bus.detect()
-                    except RuntimeError as e:
-                        print(str(e))
-                    component.detected = component.bus.has(component.address)
+                    component.detected = component.detected and test()
         # ---
         return components
 

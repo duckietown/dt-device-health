@@ -1,8 +1,8 @@
 # LIST YOUR PYTHON3 PACKAGES HERE
+# NOTE: only place non-Duckietown libraries here; pin versions only if necessary
 
 # this is used to talk to the battery
 pyserial
-pyyaml
 
 # this is for the Nvidia Jetson boards
 jetson-stats
