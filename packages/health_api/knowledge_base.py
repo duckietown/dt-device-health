@@ -2,8 +2,6 @@ import time
 from collections import defaultdict
 from typing import Iterator, Tuple, Any, Union
 
-from health_api import logger
-
 
 class NotSet:
     pass
