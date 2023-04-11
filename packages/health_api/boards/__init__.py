@@ -1,3 +1,5 @@
+import os
+
 from .raspberry_pi import RaspberryPi
 from .nvidia_jetson import NvidiaJetson
 from .virtual import Virtual
@@ -15,3 +17,7 @@ def board_has_gpu():
     if NvidiaJetson.is_instance_of():
         return True
     return False
+
+
+def board_is_virtual():
+    return os.environ.get("ROBOT_HARDWARE", None) == "virtual"
