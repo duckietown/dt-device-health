@@ -47,7 +47,7 @@ class _DB21J_NanoB01(_DB21J_Base):
         return [1, 2] + list(range(9, 17, 1))
 
 
-DB21J: Optional[Type[Robot]] = None
+DB21J: Type[Robot] = Robot
 
 
 if NvidiaJetson.is_instance_of():
