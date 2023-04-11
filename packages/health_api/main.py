@@ -8,7 +8,7 @@ from health_api.watchdog import health_watchdog
 from health_api.knowledge_base import KnowledgeBase
 from health_api.tegrastats_api import run_tegrastats
 from battery_drivers import Battery
-from health_api.boards import board_has_gpu
+from health_api.boards import board_has_gpu, board_is_virtual
 
 ROBOTS_WITH_BATTERY = [
     RobotType.DUCKIEBOT,
@@ -31,7 +31,7 @@ class HealthAPIApp(DTProcess):
         cback = lambda d: KnowledgeBase.set('battery', {'battery': {'present': True, **d}}, -1)
         self.battery = None
         robot_type = get_robot_type()
-        if robot_type in ROBOTS_WITH_BATTERY:
+        if robot_type in ROBOTS_WITH_BATTERY and not board_is_virtual():
             self.battery = Battery(cback, self.logger)
             self.register_shutdown_callback(self.battery.shutdown)
             self.battery.start()
