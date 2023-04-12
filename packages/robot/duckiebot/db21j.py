@@ -1,3 +1,4 @@
+import os
 from typing import List, Optional
 from typing import Type
 
@@ -50,7 +51,7 @@ class _DB21J_NanoB01(_DB21J_Base):
 DB21J: Type[Robot] = Robot
 
 
-if NvidiaJetson.is_instance_of():
+if os.environ.get("ROBOT_CONFIGURATION", None) == "DB21J" and NvidiaJetson.is_instance_of():
     if NvidiaJetson.is_A02():
         print("Detected Jetson Nano 4GB (Carrier Board: A02).")
         DB21J = _DB21J_NanoA02
