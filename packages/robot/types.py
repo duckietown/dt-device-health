@@ -1,9 +1,10 @@
 import dataclasses
 import os
+import re
 import subprocess
 from datetime import datetime
 from enum import IntEnum, Enum
-from typing import Dict, Union, List, Set, Callable, Optional
+from typing import Dict, Union, List, Set, Callable, Optional, overload
 
 import smbus
 
@@ -33,6 +34,7 @@ class ComponentType(Enum):
     MOTOR = "Motor Driver"
     BATTERY = "Battery"
     FLIGHT_CONTROLLER = "Flight Controller"
+    WIRELESS_ADAPTER = "Wireless Adapter"
 
 
 @dataclasses.dataclass
@@ -140,6 +142,14 @@ class I2CBusAnyOf(Bus):
 
 
 @dataclasses.dataclass
+class USBDevice:
+    bus: str
+    device: str
+    id: str
+    tag: str
+
+
+@dataclasses.dataclass
 class USBBus(Bus):
     number: int
 
@@ -149,8 +159,45 @@ class USBBus(Bus):
             **self.type.as_dict()
         }
 
-    def has(self, address: Union[str, int]) -> bool:
-        return os.path.exists(f"/dev/ttyACM{address}")
+    @overload
+    def has(self, address: int) -> bool:
+        ...
+
+    @overload
+    def has(self, id: str) -> bool:
+        ...
+
+    def has(self, address_or_id: Union[str, int]) -> bool:
+        print(address_or_id)
+        if isinstance(address_or_id, int):
+            return os.path.exists(f"/dev/ttyACM{address_or_id}")
+        else:
+            devs: List[USBDevice] = self.list_devices()
+            print(devs)
+            for dev in devs:
+                print(dev.id, address_or_id)
+                if dev.id == address_or_id:
+                    return True
+        return False
+
+    def list_devices(self) -> List[USBDevice]:
+        device_re = re.compile(
+            "Bus\s+(?P<bus>\d+)\s+Device\s+(?P<device>\d+).+ID\s(?P<id>\w+:\w+)\s(?P<tag>.+)$", re.I)
+        df = subprocess.check_output("lsusb").decode('utf-8')
+        devices: List[USBDevice] = []
+        for i in df.split('\n'):
+            if i:
+                info = device_re.match(i)
+                if info:
+                    dinfo = info.groupdict()
+                    if int(dinfo.get("bus")) == self.number:
+                        devices.append(USBDevice(
+                            bus=dinfo.pop("bus"),
+                            device=dinfo.pop("device"),
+                            id=dinfo.pop("id"),
+                            tag=dinfo.pop("tag"),
+                        ))
+        return devices
 
 
 @dataclasses.dataclass

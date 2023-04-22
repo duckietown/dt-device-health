@@ -66,7 +66,7 @@ class DB21M(Robot):
                 name="DuckieBattery",
                 instance=0,
                 # this will check for /dev/ttyACM[0]
-                address="0",
+                address=0,
                 supported=True
             ),
             HardwareComponent(
