@@ -139,7 +139,8 @@ class DB21M(Robot):
                 name="Screen",
                 instance=0,
                 address="0x3c",
-                supported=True
+                supported=True,
+                test_service_name="display_driver_node/tests/oled_display",
             ),
             HardwareComponent(
                 bus=self.I2C_HW_BUS_1,
@@ -147,7 +148,8 @@ class DB21M(Robot):
                 name="IMU",
                 instance=0,
                 address="0x68",
-                supported=True
+                supported=True,
+                test_service_name="imu_node/tests",
             ),
             HardwareComponent(
                 bus=self.GPIO,
@@ -156,7 +158,8 @@ class DB21M(Robot):
                 instance=0,
                 address=40,
                 supported=True,
-                detectable=False
+                detectable=False,
+                test_service_name="button_driver_node/tests/top_button_led",
             ),
             HardwareComponent(
                 bus=self.HAT.bus,
@@ -166,7 +169,9 @@ class DB21M(Robot):
                 address="0x40",
                 parent=self.HAT,
                 supported=True,
-                detectable=False
+                detectable=False,
+                # TODO: the tests are the same for front and back LEDs
+                test_service_name="led_driver_node/tests/led",
             ),
             HardwareComponent(
                 bus=self.HAT.bus,
@@ -176,7 +181,8 @@ class DB21M(Robot):
                 address="0x40",
                 parent=self.HAT,
                 supported=True,
-                detectable=False
+                detectable=False,
+                test_service_name="led_driver_node/tests/led",
             ),
             self.FRONT_BUMPER_I2C_MUX,
             HardwareComponent(
