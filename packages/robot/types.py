@@ -34,6 +34,7 @@ class ComponentType(Enum):
     WHEEL_ENCODER = "Wheel Encoder"
     BUTTON = "Button"
     LED_GROUP = "LED Group"
+    USB_WIFI_DONGLE = "USB Wifi Dongle"
 
 
 @dataclasses.dataclass

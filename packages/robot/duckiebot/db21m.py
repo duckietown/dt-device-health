@@ -69,7 +69,8 @@ class DB21M(Robot):
                 instance=0,
                 # this will check for /dev/ttyACM[0]
                 address="0",
-                supported=True
+                supported=True,
+                test_service_name="robot_http_api_node/tests/battery",
             ),
             HardwareComponent(
                 bus=self.I2C_SW_TEGRA_ADAPTER_BUS,
@@ -160,6 +161,16 @@ class DB21M(Robot):
                 supported=True,
                 detectable=False,
                 test_service_name="button_driver_node/tests/top_button_led",
+            ),
+            HardwareComponent(
+                bus=self.USB_BUS_1,
+                type=ComponentType.USB_WIFI_DONGLE,
+                name="Wifi Adapter",
+                instance=0,
+                address="0",
+                supported=True,
+                detectable=False,
+                test_service_name="robot_http_api_node/tests/wifi",
             ),
             HardwareComponent(
                 bus=self.HAT.bus,
