@@ -124,7 +124,8 @@ class DB21M(Robot):
                 instance=0,
                 address=18,
                 supported=True,
-                detectable=False
+                detectable=False,
+                test_service_name="left_wheel_encoder_node/test",
             ),
             HardwareComponent(
                 bus=self.GPIO,
@@ -133,7 +134,8 @@ class DB21M(Robot):
                 instance=0,
                 address=19,
                 supported=True,
-                detectable=False
+                detectable=False,
+                test_service_name="right_wheel_encoder_node/test",
             ),
             HardwareComponent(
                 bus=self.I2C_HW_BUS_1,
@@ -258,7 +260,8 @@ class DB21M(Robot):
                 instance=6,
                 address="0x29",
                 parent=self.FRONT_BUMPER_I2C_MUX,
-                supported=True
+                supported=True,
+                test_service_name="front_center_tof_driver_node/test",
             ),
             HardwareComponent(
                 bus=self.I2C_SW_FRONT_BUMPER_MUX_BUS_7,
