@@ -86,7 +86,8 @@ class DB21M(Robot):
                 ),
                 detection_tests=[
                     partial(os.path.exists, "/dev/video0")
-                ]
+                ],
+                test_service_name="camera_node/tests/camera",
             ),
             HardwareComponent(
                 bus=self.I2C_HW_BUS_1,
