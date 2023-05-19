@@ -184,7 +184,7 @@ class DB21M(Robot):
                 parent=self.HAT,
                 supported=True,
                 detectable=False,
-                test_service_name="led_driver_node/test/front",
+                test_service_name="led_driver_node/tests/front",
             ),
             HardwareComponent(
                 bus=self.HAT.bus,
@@ -195,7 +195,7 @@ class DB21M(Robot):
                 parent=self.HAT,
                 supported=True,
                 detectable=False,
-                test_service_name="led_driver_node/test/back",
+                test_service_name="led_driver_node/tests/back",
             ),
             self.FRONT_BUMPER_I2C_MUX,
             HardwareComponent(
