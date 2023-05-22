@@ -170,7 +170,7 @@ class Calibration:
     def as_dict(self) -> Dict:
         return {
             "needed": self.needed,
-            "completed": self.needed,
+            "completed": self.completed,
             "time": self.time.isoformat() if self.time else None
         }
 
