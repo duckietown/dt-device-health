@@ -168,14 +168,11 @@ class USBBus(Bus):
         ...
 
     def has(self, address_or_id: Union[str, int]) -> bool:
-        print(address_or_id)
         if isinstance(address_or_id, int):
             return os.path.exists(f"/dev/ttyACM{address_or_id}")
         else:
             devs: List[USBDevice] = self.list_devices()
-            print(devs)
             for dev in devs:
-                print(dev.id, address_or_id)
                 if dev.id == address_or_id:
                     return True
         return False
@@ -211,7 +208,6 @@ class CSIBus(Bus):
         }
 
     def has(self, address: Union[str, int]) -> bool:
-        print(subprocess.check_output(["vcgencmd", "get_camera"]).decode("utf-8"))
         return "supported=1" in subprocess.check_output(["vcgencmd", "get_camera"]).decode("utf-8")
 
 

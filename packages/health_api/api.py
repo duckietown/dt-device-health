@@ -24,7 +24,6 @@ class HealthAPI(Flask):
     def __init__(self, app):
         global __battery__
         super(HealthAPI, self).__init__(__name__)
-        self.url_map.strict_slashes = False
         # keep a link to the Battery object
         __battery__ = app.battery
         # create token for privileged operations
