@@ -7,7 +7,7 @@ from typing import List, Optional
 
 from dt_robot_utils import get_robot_name
 from robot.types import Robot, HardwareComponent, I2CBus, BusType, ComponentType, Calibration, \
-    USBBus
+    USBBus, GPIO
 
 CALIBRATIONS_DIR = "/data/config/calibrations/"
 
@@ -17,6 +17,7 @@ KINEM_CALIB_FILE = os.path.join(CALIBRATIONS_DIR, "kinematics", f"{get_robot_nam
 
 
 class DB21M(Robot):
+    GPIO = GPIO(BusType.GPIO)
     # buses
     I2C_HW_BUS_1 = I2CBus(BusType.I2C, 1)
     I2C_HW_BUS_2 = I2CBus(BusType.I2C, 2)
@@ -39,6 +40,14 @@ class DB21M(Robot):
         address="0x70",
         supported=True
     )
+    HAT = HardwareComponent(
+        bus=I2C_HW_BUS_1,
+        type=ComponentType.HAT,
+        name="Duckietown HAT",
+        instance=0,
+        address="0x40",
+        supported=True
+    )
 
     @staticmethod
     def get_i2c_buses() -> List[int]:
@@ -52,14 +61,7 @@ class DB21M(Robot):
 
     def _get_components(self) -> List[HardwareComponent]:
         return [
-            HardwareComponent(
-                bus=self.I2C_HW_BUS_1,
-                type=ComponentType.HAT,
-                name="Duckietown HAT",
-                instance=0,
-                address="0x40",
-                supported=True
-            ),
+            self.HAT,
             HardwareComponent(
                 bus=self.USB_BUS_1,
                 type=ComponentType.BATTERY,
@@ -112,6 +114,24 @@ class DB21M(Robot):
                 )
             ),
             HardwareComponent(
+                bus=self.GPIO,
+                type=ComponentType.WHEEL_ENCODER,
+                name="Left Wheel Encoder",
+                instance=0,
+                address=18,
+                supported=True,
+                detectable=False
+            ),
+            HardwareComponent(
+                bus=self.GPIO,
+                type=ComponentType.WHEEL_ENCODER,
+                name="Right Wheel Encoder",
+                instance=0,
+                address=19,
+                supported=True,
+                detectable=False
+            ),
+            HardwareComponent(
                 bus=self.I2C_HW_BUS_1,
                 type=ComponentType.SCREEN,
                 name="Screen",
@@ -126,6 +146,35 @@ class DB21M(Robot):
                 instance=0,
                 address="0x68",
                 supported=True
+            ),
+            HardwareComponent(
+                bus=self.GPIO,
+                type=ComponentType.BUTTON,
+                name="Power Button",
+                instance=0,
+                address=40,
+                supported=True,
+                detectable=False
+            ),
+            HardwareComponent(
+                bus=self.HAT.bus,
+                type=ComponentType.LED_GROUP,
+                name="Front LEDs",
+                instance=0,
+                address="0x40",
+                parent=self.HAT,
+                supported=True,
+                detectable=False
+            ),
+            HardwareComponent(
+                bus=self.HAT.bus,
+                type=ComponentType.LED_GROUP,
+                name="Back LEDs",
+                instance=0,
+                address="0x40",
+                parent=self.HAT,
+                supported=True,
+                detectable=False
             ),
             self.FRONT_BUMPER_I2C_MUX,
             HardwareComponent(

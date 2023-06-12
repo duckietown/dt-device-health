@@ -12,6 +12,7 @@ class BusType(IntEnum):
     I2C = 1
     SPI = 2
     USB = 3
+    GPIO = 4
 
     def as_dict(self) -> Dict:
         return {
@@ -30,6 +31,9 @@ class ComponentType(Enum):
     HAT = "Duckietown HAT"
     MOTOR = "Motor Driver"
     BATTERY = "Battery"
+    WHEEL_ENCODER = "Wheel Encoder"
+    BUTTON = "Button"
+    LED_GROUP = "LED Group"
 
 
 @dataclasses.dataclass
@@ -150,6 +154,10 @@ class USBBus(Bus):
         return os.path.exists(f"/dev/ttyACM{address}")
 
 
+class GPIO(Bus):
+    pass
+
+
 Buses: Dict[str, Dict[int, Bus]]
 
 
@@ -162,7 +170,7 @@ class Calibration:
     def as_dict(self) -> Dict:
         return {
             "needed": self.needed,
-            "completed": self.needed,
+            "completed": self.completed,
             "time": self.time.isoformat() if self.time else None
         }
 
@@ -179,6 +187,7 @@ class HardwareComponent:
     detected: bool = False
     calibration: Calibration = dataclasses.field(default_factory=Calibration)
     detection_tests: Optional[List[Callable]] = None
+    detectable: bool = True
 
     def as_dict(self, compact: bool = False):
         return {
@@ -195,6 +204,7 @@ class HardwareComponent:
             "parent": self.parent.as_dict(compact=True) if self.parent else None,
             "supported": self.supported,
             "detected": self.detected,
+            "detectable": self.detectable,
             "calibration": self.calibration.as_dict()
         }
 
