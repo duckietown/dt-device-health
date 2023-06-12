@@ -35,7 +35,9 @@ class DB21M(Robot):
     FRONT_BUMPER_I2C_MUX = HardwareComponent(
         bus=I2C_HW_BUS_1,
         type=ComponentType.BUS_MULTIPLEXER,
+        key="front-bumper",
         name="Front Bumper",
+        description="The front bumper hosting the I2C multiplexer",
         instance=0,
         address="0x70",
         supported=True
@@ -43,7 +45,9 @@ class DB21M(Robot):
     HAT = HardwareComponent(
         bus=I2C_HW_BUS_1,
         type=ComponentType.HAT,
+        key="hat",
         name="Duckietown HAT",
+        description="The Duckietown HAT connected to the GPIO header",
         instance=0,
         address="0x40",
         supported=True
@@ -65,7 +69,9 @@ class DB21M(Robot):
             HardwareComponent(
                 bus=self.USB_BUS_1,
                 type=ComponentType.BATTERY,
+                key="battery",
                 name="DuckieBattery",
+                description="",
                 instance=0,
                 # this will check for /dev/ttyACM[0]
                 address="0",
@@ -75,7 +81,9 @@ class DB21M(Robot):
             HardwareComponent(
                 bus=self.I2C_SW_TEGRA_ADAPTER_BUS,
                 type=ComponentType.CAMERA,
+                key="camera",
                 name="IMX219 Camera Module",
+                description="Robot's camera",
                 instance=0,
                 address="0x10",
                 supported=True,
@@ -92,7 +100,9 @@ class DB21M(Robot):
             HardwareComponent(
                 bus=self.I2C_HW_BUS_1,
                 type=ComponentType.MOTOR,
+                key="left-wheel/motor",
                 name="Left Motor Driver",
+                description="Motor controlling the left wheel",
                 instance=0,
                 address="0x40",
                 supported=True,
@@ -106,7 +116,9 @@ class DB21M(Robot):
             HardwareComponent(
                 bus=self.I2C_HW_BUS_1,
                 type=ComponentType.MOTOR,
+                key="right-wheel/motor",
                 name="Right Motor Driver",
+                description="Motor controlling the right wheel",
                 instance=0,
                 address="0x40",
                 supported=True,
@@ -120,7 +132,9 @@ class DB21M(Robot):
             HardwareComponent(
                 bus=self.GPIO,
                 type=ComponentType.WHEEL_ENCODER,
+                key="left-wheel/encoder",
                 name="Left Wheel Encoder",
+                description="Left wheel encoder measuring how much the wheel rotates",
                 instance=0,
                 address=18,
                 supported=True,
@@ -130,7 +144,9 @@ class DB21M(Robot):
             HardwareComponent(
                 bus=self.GPIO,
                 type=ComponentType.WHEEL_ENCODER,
+                key="right-wheel/encoder",
                 name="Right Wheel Encoder",
+                description="Right wheel encoder measuring how much the wheel rotates",
                 instance=0,
                 address=19,
                 supported=True,
@@ -140,7 +156,9 @@ class DB21M(Robot):
             HardwareComponent(
                 bus=self.I2C_HW_BUS_1,
                 type=ComponentType.SCREEN,
+                key="screen",
                 name="Screen",
+                description="OLED screen on the top plate of the robot",
                 instance=0,
                 address="0x3c",
                 supported=True,
@@ -149,7 +167,9 @@ class DB21M(Robot):
             HardwareComponent(
                 bus=self.I2C_HW_BUS_1,
                 type=ComponentType.IMU,
+                key="imu",
                 name="IMU",
+                description="IMU - Inertial Measurement Unit",
                 instance=0,
                 address="0x68",
                 supported=True,
@@ -158,7 +178,9 @@ class DB21M(Robot):
             HardwareComponent(
                 bus=self.GPIO,
                 type=ComponentType.BUTTON,
+                key="power-button",
                 name="Power Button",
+                description="The power button on the top plate of the robot",
                 instance=0,
                 address=40,
                 supported=True,
@@ -168,7 +190,9 @@ class DB21M(Robot):
             HardwareComponent(
                 bus=self.USB_BUS_1,
                 type=ComponentType.USB_WIFI_DONGLE,
+                key="wifi",
                 name="Wifi Adapter",
+                description="USB Wifi Dongle",
                 instance=0,
                 address="0",
                 supported=True,
@@ -178,7 +202,9 @@ class DB21M(Robot):
             HardwareComponent(
                 bus=self.HAT.bus,
                 type=ComponentType.LED_GROUP,
+                key="leds/front",
                 name="Front LEDs",
+                description="LEDs on the front of the vehicle",
                 instance=0,
                 address="0x40",
                 parent=self.HAT,
@@ -189,7 +215,9 @@ class DB21M(Robot):
             HardwareComponent(
                 bus=self.HAT.bus,
                 type=ComponentType.LED_GROUP,
+                key="leds/back",
                 name="Back LEDs",
+                description="LEDs on the back of the vehicle",
                 instance=0,
                 address="0x40",
                 parent=self.HAT,
@@ -201,7 +229,9 @@ class DB21M(Robot):
             HardwareComponent(
                 bus=self.I2C_SW_FRONT_BUMPER_MUX_BUS_0,
                 type=ComponentType.TOF,
+                key="tof/0",
                 name="ToF",
+                description="ToF - Time-of-Flight sensor",
                 instance=0,
                 address="0x29",
                 parent=self.FRONT_BUMPER_I2C_MUX,
@@ -210,7 +240,9 @@ class DB21M(Robot):
             HardwareComponent(
                 bus=self.I2C_SW_FRONT_BUMPER_MUX_BUS_1,
                 type=ComponentType.TOF,
+                key="tof/1",
                 name="ToF",
+                description="ToF - Time-of-Flight sensor",
                 instance=1,
                 address="0x29",
                 parent=self.FRONT_BUMPER_I2C_MUX,
@@ -219,7 +251,9 @@ class DB21M(Robot):
             HardwareComponent(
                 bus=self.I2C_SW_FRONT_BUMPER_MUX_BUS_2,
                 type=ComponentType.TOF,
+                key="tof/2",
                 name="ToF",
+                description="ToF - Time-of-Flight sensor",
                 instance=2,
                 address="0x29",
                 parent=self.FRONT_BUMPER_I2C_MUX,
@@ -228,7 +262,9 @@ class DB21M(Robot):
             HardwareComponent(
                 bus=self.I2C_SW_FRONT_BUMPER_MUX_BUS_3,
                 type=ComponentType.TOF,
+                key="tof/3",
                 name="ToF",
+                description="ToF - Time-of-Flight sensor",
                 instance=3,
                 address="0x29",
                 parent=self.FRONT_BUMPER_I2C_MUX,
@@ -237,7 +273,9 @@ class DB21M(Robot):
             HardwareComponent(
                 bus=self.I2C_SW_FRONT_BUMPER_MUX_BUS_4,
                 type=ComponentType.TOF,
+                key="tof/4",
                 name="ToF",
+                description="ToF - Time-of-Flight sensor",
                 instance=4,
                 address="0x29",
                 parent=self.FRONT_BUMPER_I2C_MUX,
@@ -246,7 +284,9 @@ class DB21M(Robot):
             HardwareComponent(
                 bus=self.I2C_SW_FRONT_BUMPER_MUX_BUS_5,
                 type=ComponentType.TOF,
+                key="tof/5",
                 name="ToF",
+                description="ToF - Time-of-Flight sensor",
                 instance=5,
                 address="0x29",
                 parent=self.FRONT_BUMPER_I2C_MUX,
@@ -255,7 +295,9 @@ class DB21M(Robot):
             HardwareComponent(
                 bus=self.I2C_SW_FRONT_BUMPER_MUX_BUS_6,
                 type=ComponentType.TOF,
+                key="tof/front-center",
                 name="ToF",
+                description="ToF - Time-of-Flight sensor",
                 instance=6,
                 address="0x29",
                 parent=self.FRONT_BUMPER_I2C_MUX,
@@ -265,7 +307,9 @@ class DB21M(Robot):
             HardwareComponent(
                 bus=self.I2C_SW_FRONT_BUMPER_MUX_BUS_7,
                 type=ComponentType.TOF,
+                key="tof/7",
                 name="ToF",
+                description="ToF - Time-of-Flight sensor",
                 instance=7,
                 address="0x29",
                 parent=self.FRONT_BUMPER_I2C_MUX,

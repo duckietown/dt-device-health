@@ -180,7 +180,9 @@ class Calibration:
 class HardwareComponent:
     bus: Union[Bus, None]
     type: ComponentType
+    key: str
     name: str
+    description: str
     instance: int
     address: Union[str, int]
     parent: Union['HardwareComponent', None] = None
@@ -199,8 +201,9 @@ class HardwareComponent:
         } if compact else {
             "bus": self.bus.as_dict(),
             "type": self.type.name,
-            "description": self.type.value,
+            "key": self.key,
             "name": self.name,
+            "description": self.description,
             "instance": self.instance,
             "address": self.address,
             "parent": self.parent.as_dict(compact=True) if self.parent else None,
