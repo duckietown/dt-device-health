@@ -69,7 +69,8 @@ class DB21M(Robot):
                 instance=0,
                 # this will check for /dev/ttyACM[0]
                 address="0",
-                supported=True
+                supported=True,
+                test_service_name="robot_http_api_node/tests/battery",
             ),
             HardwareComponent(
                 bus=self.I2C_SW_TEGRA_ADAPTER_BUS,
@@ -85,7 +86,8 @@ class DB21M(Robot):
                 ),
                 detection_tests=[
                     partial(os.path.exists, "/dev/video0")
-                ]
+                ],
+                test_service_name="camera_node/test",
             ),
             HardwareComponent(
                 bus=self.I2C_HW_BUS_1,
@@ -98,7 +100,8 @@ class DB21M(Robot):
                     needed=True,
                     completed=isfile(KINEM_CALIB_FILE),
                     time=self.get_file_mtime(KINEM_CALIB_FILE)
-                )
+                ),
+                test_service_name="wheels_driver_node/tests/left",
             ),
             HardwareComponent(
                 bus=self.I2C_HW_BUS_1,
@@ -111,7 +114,8 @@ class DB21M(Robot):
                     needed=True,
                     completed=isfile(KINEM_CALIB_FILE),
                     time=self.get_file_mtime(KINEM_CALIB_FILE)
-                )
+                ),
+                test_service_name="wheels_driver_node/tests/right",
             ),
             HardwareComponent(
                 bus=self.GPIO,
@@ -120,7 +124,8 @@ class DB21M(Robot):
                 instance=0,
                 address=18,
                 supported=True,
-                detectable=False
+                detectable=False,
+                test_service_name="left_wheel_encoder_node/test",
             ),
             HardwareComponent(
                 bus=self.GPIO,
@@ -129,7 +134,8 @@ class DB21M(Robot):
                 instance=0,
                 address=19,
                 supported=True,
-                detectable=False
+                detectable=False,
+                test_service_name="right_wheel_encoder_node/test",
             ),
             HardwareComponent(
                 bus=self.I2C_HW_BUS_1,
@@ -137,7 +143,8 @@ class DB21M(Robot):
                 name="Screen",
                 instance=0,
                 address="0x3c",
-                supported=True
+                supported=True,
+                test_service_name="display_driver_node/test",
             ),
             HardwareComponent(
                 bus=self.I2C_HW_BUS_1,
@@ -145,7 +152,8 @@ class DB21M(Robot):
                 name="IMU",
                 instance=0,
                 address="0x68",
-                supported=True
+                supported=True,
+                test_service_name="imu_node/test",
             ),
             HardwareComponent(
                 bus=self.GPIO,
@@ -154,7 +162,18 @@ class DB21M(Robot):
                 instance=0,
                 address=40,
                 supported=True,
-                detectable=False
+                detectable=False,
+                test_service_name="button_driver_node/test",
+            ),
+            HardwareComponent(
+                bus=self.USB_BUS_1,
+                type=ComponentType.USB_WIFI_DONGLE,
+                name="Wifi Adapter",
+                instance=0,
+                address="0",
+                supported=True,
+                detectable=False,
+                test_service_name="robot_http_api_node/tests/wifi",
             ),
             HardwareComponent(
                 bus=self.HAT.bus,
@@ -164,7 +183,8 @@ class DB21M(Robot):
                 address="0x40",
                 parent=self.HAT,
                 supported=True,
-                detectable=False
+                detectable=False,
+                test_service_name="led_driver_node/tests/front",
             ),
             HardwareComponent(
                 bus=self.HAT.bus,
@@ -174,7 +194,8 @@ class DB21M(Robot):
                 address="0x40",
                 parent=self.HAT,
                 supported=True,
-                detectable=False
+                detectable=False,
+                test_service_name="led_driver_node/tests/back",
             ),
             self.FRONT_BUMPER_I2C_MUX,
             HardwareComponent(
@@ -238,7 +259,8 @@ class DB21M(Robot):
                 instance=6,
                 address="0x29",
                 parent=self.FRONT_BUMPER_I2C_MUX,
-                supported=True
+                supported=True,
+                test_service_name="front_center_tof_driver_node/test",
             ),
             HardwareComponent(
                 bus=self.I2C_SW_FRONT_BUMPER_MUX_BUS_7,
