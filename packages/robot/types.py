@@ -14,7 +14,8 @@ class BusType(IntEnum):
     I2C = 1
     SPI = 2
     USB = 3
-    CSI = 4
+    GPIO = 4
+    CSI = 5
 
     def as_dict(self) -> Dict:
         return {
@@ -33,8 +34,12 @@ class ComponentType(Enum):
     HAT = "Duckietown HAT"
     MOTOR = "Motor Driver"
     BATTERY = "Battery"
+    WHEEL_ENCODER = "Wheel Encoder"
+    BUTTON = "Button"
+    LED_GROUP = "LED Group"
+    USB_WIFI_DONGLE = "USB Wifi Dongle"
     FLIGHT_CONTROLLER = "Flight Controller"
-    WIRELESS_ADAPTER = "Wireless Adapter"
+    INTERNAL_WIRELESS_ADAPTER = "Internal Wireless Adapter"
 
 
 @dataclasses.dataclass
@@ -211,6 +216,10 @@ class CSIBus(Bus):
         return "supported=1" in subprocess.check_output(["vcgencmd", "get_camera"]).decode("utf-8")
 
 
+class GPIO(Bus):
+    pass
+
+
 Buses: Dict[str, Dict[int, Bus]]
 
 
@@ -223,7 +232,7 @@ class Calibration:
     def as_dict(self) -> Dict:
         return {
             "needed": self.needed,
-            "completed": self.needed,
+            "completed": self.completed,
             "time": self.time.isoformat() if self.time else None
         }
 
@@ -232,7 +241,9 @@ class Calibration:
 class HardwareComponent:
     bus: Union[Bus, None]
     type: ComponentType
+    key: str
     name: str
+    description: str
     instance: int
     address: Union[str, int]
     parent: Union['HardwareComponent', None] = None
@@ -240,6 +251,8 @@ class HardwareComponent:
     detected: bool = False
     calibration: Calibration = dataclasses.field(default_factory=Calibration)
     detection_tests: Optional[List[Callable]] = None
+    detectable: bool = True
+    test_service_name: Optional[str] = None
 
     def as_dict(self, compact: bool = False):
         return {
@@ -249,14 +262,17 @@ class HardwareComponent:
         } if compact else {
             "bus": self.bus.as_dict(),
             "type": self.type.name,
-            "description": self.type.value,
+            "key": self.key,
             "name": self.name,
+            "description": self.description,
             "instance": self.instance,
             "address": self.address,
             "parent": self.parent.as_dict(compact=True) if self.parent else None,
             "supported": self.supported,
             "detected": self.detected,
-            "calibration": self.calibration.as_dict()
+            "detectable": self.detectable,
+            "calibration": self.calibration.as_dict(),
+            "test_service_name": self.test_service_name if self.test_service_name else "",
         }
 
 
