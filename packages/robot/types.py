@@ -1,8 +1,10 @@
 import dataclasses
 import os
+import re
+import subprocess
 from datetime import datetime
 from enum import IntEnum, Enum
-from typing import Dict, Union, List, Set, Callable, Optional
+from typing import Dict, Union, List, Set, Callable, Optional, overload
 
 import smbus
 
@@ -13,6 +15,7 @@ class BusType(IntEnum):
     SPI = 2
     USB = 3
     GPIO = 4
+    CSI = 5
 
     def as_dict(self) -> Dict:
         return {
@@ -142,6 +145,14 @@ class I2CBusAnyOf(Bus):
 
 
 @dataclasses.dataclass
+class USBDevice:
+    bus: str
+    device: str
+    id: str
+    tag: str
+
+
+@dataclasses.dataclass
 class USBBus(Bus):
     number: int
 
@@ -151,8 +162,56 @@ class USBBus(Bus):
             **self.type.as_dict()
         }
 
+    @overload
+    def has(self, address: int) -> bool:
+        ...
+
+    @overload
+    def has(self, id: str) -> bool:
+        ...
+
+    def has(self, address_or_id: Union[str, int]) -> bool:
+        if isinstance(address_or_id, int):
+            return os.path.exists(f"/dev/ttyACM{address_or_id}")
+        else:
+            devs: List[USBDevice] = self.list_devices()
+            for dev in devs:
+                if dev.id == address_or_id:
+                    return True
+        return False
+
+    def list_devices(self) -> List[USBDevice]:
+        device_re = re.compile(
+            "Bus\s+(?P<bus>\d+)\s+Device\s+(?P<device>\d+).+ID\s(?P<id>\w+:\w+)\s(?P<tag>.+)$", re.I)
+        df = subprocess.check_output("lsusb").decode('utf-8')
+        devices: List[USBDevice] = []
+        for i in df.split('\n'):
+            if i:
+                info = device_re.match(i)
+                if info:
+                    dinfo = info.groupdict()
+                    if int(dinfo.get("bus")) == self.number:
+                        devices.append(USBDevice(
+                            bus=dinfo.pop("bus"),
+                            device=dinfo.pop("device"),
+                            id=dinfo.pop("id"),
+                            tag=dinfo.pop("tag"),
+                        ))
+        return devices
+
+
+@dataclasses.dataclass
+class CSIBus(Bus):
+    number: int
+
+    def as_dict(self) -> Dict:
+        return {
+            "number": self.number,
+            **self.type.as_dict()
+        }
+
     def has(self, address: Union[str, int]) -> bool:
-        return os.path.exists(f"/dev/ttyACM{address}")
+        return "supported=1" in subprocess.check_output(["vcgencmd", "get_camera"]).decode("utf-8")
 
 
 class GPIO(Bus):

@@ -74,7 +74,7 @@ class DB21M(Robot):
                 description="",
                 instance=0,
                 # this will check for /dev/ttyACM[0]
-                address="0",
+                address=0,
                 supported=True,
                 test_service_name="robot_http_api_node/tests/battery",
             ),
