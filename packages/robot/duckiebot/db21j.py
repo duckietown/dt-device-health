@@ -1,5 +1,5 @@
 import os
-from typing import List, Optional
+from typing import List
 from typing import Type
 
 from health_api.boards import NvidiaJetson
@@ -27,8 +27,10 @@ class _DB21J_Base(DB21M):
         components.append(
             HardwareComponent(
                 bus=self.USB_BUS_1,
-                type=ComponentType.WIRELESS_ADAPTER,
+                type=ComponentType.USB_WIFI_DONGLE,
+                key="usb-wifi",
                 name="Wireless Adapter",
+                description="USB Wireless Adapter dongle",
                 instance=0,
                 address="0bda:c811",
                 supported=True

@@ -43,7 +43,9 @@ class DD21(Robot):
             HardwareComponent(
                 bus=DD21.I2C_HW_BUS_1,
                 type=ComponentType.TOF,
+                key="tof/height",
                 name="ToF",
+                description="ToF - Time-of-Flight sensor",
                 instance=0,
                 address="0x29",
                 supported=True
@@ -51,7 +53,9 @@ class DD21(Robot):
             HardwareComponent(
                 bus=DD21.USB_BUS_1,
                 type=ComponentType.FLIGHT_CONTROLLER,
+                key="flight-controller",
                 name="Flight Controller",
+                description="Flight Controller PCB",
                 instance=0,
                 address=0,
                 supported=True,
@@ -67,7 +71,9 @@ class DD21(Robot):
             HardwareComponent(
                 bus=DD21.CSI_BUS_1,
                 type=ComponentType.CAMERA,
+                key="camera",
                 name="IMX219 Camera Module",
+                description="Robot's camera",
                 instance=0,
                 address=0,
                 supported=True,
