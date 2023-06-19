@@ -572,6 +572,7 @@ class RaspberryPi(GenericMachine):
             }
         }
 
+
 __all__ = [
     'RaspberryPi'
 ]

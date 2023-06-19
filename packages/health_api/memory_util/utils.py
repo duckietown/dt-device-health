@@ -3,7 +3,8 @@ import re
 REGEXP = re.compile(r'(.+?):\s+(.+?) (.?)B')
 
 
-#In reference to: https://github.com/rbonghi/jetson_stats/blob/e6e140447640b53ae83797541635a6a58927a68e/jtop/core/memory.py#L29
+# In reference to:
+#   https://github.com/rbonghi/jetson_stats/blob/e6e140447640b53ae83797541635a6a58927a68e/jtop/core/memory.py#L29
 def poll_meminfo(path="/proc/meminfo"):
     memory_info = {}
     with open(path, "r") as fp:

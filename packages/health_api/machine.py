@@ -200,10 +200,8 @@ class GenericMachine(abc.ABC):
         themal_zones = psutil.sensors_temperatures()
         temp = themal_zones.get(self.get_cpu_thermal_zone_name(), None)
         if temp is None or len(temp) <= 0:
-            return 0.0
-        return {
-            "temperature": temp[0].current
-        }
+            return {"temperature": 0.0}
+        return {"temperature": temp[0].current}
 
     @staticmethod
     def get_software():

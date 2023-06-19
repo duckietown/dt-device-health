@@ -1,8 +1,10 @@
 import dataclasses
 import os
+import re
+import subprocess
 from datetime import datetime
 from enum import IntEnum, Enum
-from typing import Dict, Union, List, Set, Callable, Optional
+from typing import Dict, Union, List, Set, Callable, Optional, overload
 
 import smbus
 
@@ -13,6 +15,7 @@ class BusType(IntEnum):
     SPI = 2
     USB = 3
     GPIO = 4
+    CSI = 5
 
     def as_dict(self) -> Dict:
         return {
@@ -34,6 +37,7 @@ class ComponentType(Enum):
     WHEEL_ENCODER = "Wheel Encoder"
     BUTTON = "Button"
     LED_GROUP = "LED Group"
+    USB_WIFI_DONGLE = "USB Wifi Dongle"
 
 
 @dataclasses.dataclass
@@ -141,6 +145,14 @@ class I2CBusAnyOf(Bus):
 
 
 @dataclasses.dataclass
+class USBDevice:
+    bus: str
+    device: str
+    id: str
+    tag: str
+
+
+@dataclasses.dataclass
 class USBBus(Bus):
     number: int
 
@@ -150,8 +162,56 @@ class USBBus(Bus):
             **self.type.as_dict()
         }
 
+    @overload
+    def has(self, address: int) -> bool:
+        ...
+
+    @overload
+    def has(self, id: str) -> bool:
+        ...
+
+    def has(self, address_or_id: Union[str, int]) -> bool:
+        if isinstance(address_or_id, int):
+            return os.path.exists(f"/dev/ttyACM{address_or_id}")
+        else:
+            devs: List[USBDevice] = self.list_devices()
+            for dev in devs:
+                if dev.id == address_or_id:
+                    return True
+        return False
+
+    def list_devices(self) -> List[USBDevice]:
+        device_re = re.compile(
+            "Bus\s+(?P<bus>\d+)\s+Device\s+(?P<device>\d+).+ID\s(?P<id>\w+:\w+)\s(?P<tag>.+)$", re.I)
+        df = subprocess.check_output("lsusb").decode('utf-8')
+        devices: List[USBDevice] = []
+        for i in df.split('\n'):
+            if i:
+                info = device_re.match(i)
+                if info:
+                    dinfo = info.groupdict()
+                    if int(dinfo.get("bus")) == self.number:
+                        devices.append(USBDevice(
+                            bus=dinfo.pop("bus"),
+                            device=dinfo.pop("device"),
+                            id=dinfo.pop("id"),
+                            tag=dinfo.pop("tag"),
+                        ))
+        return devices
+
+
+@dataclasses.dataclass
+class CSIBus(Bus):
+    number: int
+
+    def as_dict(self) -> Dict:
+        return {
+            "number": self.number,
+            **self.type.as_dict()
+        }
+
     def has(self, address: Union[str, int]) -> bool:
-        return os.path.exists(f"/dev/ttyACM{address}")
+        return "supported=1" in subprocess.check_output(["vcgencmd", "get_camera"]).decode("utf-8")
 
 
 class GPIO(Bus):
@@ -179,7 +239,9 @@ class Calibration:
 class HardwareComponent:
     bus: Union[Bus, None]
     type: ComponentType
+    key: str
     name: str
+    description: str
     instance: int
     address: Union[str, int]
     parent: Union['HardwareComponent', None] = None
@@ -188,6 +250,7 @@ class HardwareComponent:
     calibration: Calibration = dataclasses.field(default_factory=Calibration)
     detection_tests: Optional[List[Callable]] = None
     detectable: bool = True
+    test_service_name: Optional[str] = None
 
     def as_dict(self, compact: bool = False):
         return {
@@ -197,15 +260,17 @@ class HardwareComponent:
         } if compact else {
             "bus": self.bus.as_dict(),
             "type": self.type.name,
-            "description": self.type.value,
+            "key": self.key,
             "name": self.name,
+            "description": self.description,
             "instance": self.instance,
             "address": self.address,
             "parent": self.parent.as_dict(compact=True) if self.parent else None,
             "supported": self.supported,
             "detected": self.detected,
             "detectable": self.detectable,
-            "calibration": self.calibration.as_dict()
+            "calibration": self.calibration.as_dict(),
+            "test_service_name": self.test_service_name if self.test_service_name else "",
         }
 
 
