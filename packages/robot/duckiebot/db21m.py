@@ -100,7 +100,7 @@ class DB21M(Robot):
             HardwareComponent(
                 bus=self.I2C_HW_BUS_1,
                 type=ComponentType.MOTOR,
-                key="left-wheel/motor",
+                key="motor/left",
                 name="Left Motor Driver",
                 description="Motor controlling the left wheel",
                 instance=0,
@@ -116,7 +116,7 @@ class DB21M(Robot):
             HardwareComponent(
                 bus=self.I2C_HW_BUS_1,
                 type=ComponentType.MOTOR,
-                key="right-wheel/motor",
+                key="motor/right",
                 name="Right Motor Driver",
                 description="Motor controlling the right wheel",
                 instance=0,
@@ -132,7 +132,7 @@ class DB21M(Robot):
             HardwareComponent(
                 bus=self.GPIO,
                 type=ComponentType.WHEEL_ENCODER,
-                key="left-wheel/encoder",
+                key="encoder/left",
                 name="Left Wheel Encoder",
                 description="Left wheel encoder measuring how much the wheel rotates",
                 instance=0,
@@ -144,7 +144,7 @@ class DB21M(Robot):
             HardwareComponent(
                 bus=self.GPIO,
                 type=ComponentType.WHEEL_ENCODER,
-                key="right-wheel/encoder",
+                key="encoder/right",
                 name="Right Wheel Encoder",
                 description="Right wheel encoder measuring how much the wheel rotates",
                 instance=0,
