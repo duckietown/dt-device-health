@@ -23,19 +23,6 @@ class _DB21J_Base(DB21M):
                     [self.I2C_SW_FRONT_BUMPER_MUX_BUS_6, self.I2C_HW_BUS_1],
                     "0x29"
                 )
-        # add WiFi adapter
-        components.append(
-            HardwareComponent(
-                bus=self.USB_BUS_1,
-                type=ComponentType.USB_WIFI_DONGLE,
-                key="usb-wifi",
-                name="Wireless Adapter",
-                description="USB Wireless Adapter dongle",
-                instance=0,
-                address="0bda:c811",
-                supported=True
-            )
-        )
         # ---
         return components
 
