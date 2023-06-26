@@ -1,4 +1,5 @@
 import logging
+import requests
 import uuid
 from typing import Union
 
@@ -8,7 +9,7 @@ from flask_cors import CORS
 from battery_drivers import Battery
 from dt_triggers_utils import set_trigger
 from health_api.boards import get_board
-from health_api.constants import DEBUG
+from health_api.constants import DEBUG, API_SHOW_SHUTDOWN_BEHAVIOR
 from health_api.knowledge_base import KnowledgeBase
 from health_api.resources import all_resources, cached_resource
 
@@ -62,6 +63,15 @@ def _trigger(trigger: str):
     value = request.args.get('value', default='health-api')
     # special case: trigger == shutdown
     if trigger == 'shutdown' and __battery__ is not None:
+        # show the pre-shutdown behaviors: Blink power LED, turn off car LEDs, show info on Display
+        resp = requests.get(API_SHOW_SHUTDOWN_BEHAVIOR)
+        if resp.status_code == 200:
+            data = resp.json()
+            success = (data["status"] == "ok")
+            if not success:
+                print("Request to show shutdown behaviors failed with message:", data["message"])
+        else:
+            print(f"Request failed with status code [{resp.status_code}] on {API_SHOW_SHUTDOWN_BEHAVIOR}")
         # shutdown the battery first, then the host
         timeout = request.args.get('timeout', default=10)
         __battery__.turn_off(timeout, callback=lambda _: set_trigger(trigger, value))
