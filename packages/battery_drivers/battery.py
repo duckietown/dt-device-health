@@ -12,7 +12,11 @@ import semver
 from serial.tools.list_ports import grep as serial_grep
 
 from dt_class_utils import DTReminder
-from .constants import BATTERY_PCB16_READY_VID, BATTERY_PCB16_READY_PID, BATTERY_PCB16_BAUD_RATE
+from .constants import (
+    BATTERY_PCB_READY_VID,
+    BATTERY_PCB_READY_PID,
+    BATTERY_PCB_BAUD_RATE,
+)
 from .history import BatteryHistory
 
 KELVIN_TO_CELSIUS = lambda k: k - 273.15
@@ -156,7 +160,10 @@ class Battery:
         return self._history.get()
 
     def _find_device(self):
-        vid_pid_match = "VID:PID={}:{}".format(BATTERY_PCB16_READY_VID, BATTERY_PCB16_READY_PID)
+        vid_pid_match = "VID:PID={}:{}".format(
+            BATTERY_PCB_READY_VID,
+            BATTERY_PCB_READY_PID,
+        )
         ports = serial_grep(vid_pid_match)
         self._devices = [p.device for p in ports]  # ['/dev/ttyACM0', ...]
 
@@ -206,7 +213,7 @@ class Battery:
             else:
                 # we have at least one candidate device, try reading
                 for device in self._devices:
-                    with serial.Serial(device, BATTERY_PCB16_BAUD_RATE) as dev:
+                    with serial.Serial(device, BATTERY_PCB_BAUD_RATE) as dev:
                         # once the device is open, try reading from it forever
                         # break only on unknown errors
                         while True:
