@@ -2,10 +2,10 @@
 # NOTE: only place non-Duckietown libraries here; pin versions only if necessary
 
 # this is used to talk to the battery
-pyserial
+pyserial==3.5
 
 # this is for the Nvidia Jetson boards
-jetson-stats
+jetson-stats==4.2.4
 
 # support for different battery firmware versions
-semver
+semver==3.0.2
