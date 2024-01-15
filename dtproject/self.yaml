@@ -1,0 +1,8 @@
+name: "dt-device-health"
+maintainer:
+    name: "Andrea F. Daniele"
+    email: "afdaniele@duckietown.com"
+description: "Provides a RESTful API to monitor the health of a Duckietown device"
+version: 4.1.1
+# pick an icon from: https://fontawesome.com/v4.7.0/icons/
+icon: heartbeat

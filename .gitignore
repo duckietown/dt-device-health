@@ -7,6 +7,3 @@ html/*
 
 # otherwise CI thinks index not clean
 *.resolved
-
-# prevent idea project folder being uploaded
-.idea
