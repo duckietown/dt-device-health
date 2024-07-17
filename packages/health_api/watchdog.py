@@ -10,7 +10,7 @@ from health_api.constants import HEALTH_WATCHDOG_FREQUENZY_HZ
 def health_watchdog():
     sleep_time = 1.0 / HEALTH_WATCHDOG_FREQUENZY_HZ
     process = DTProcess.get_instance()
-    while not process.is_shutdown():
+    while not process.is_shutdown:
         res = cached_resource('status')
         if res['status'] == 'error':
             set_module_unhealthy()

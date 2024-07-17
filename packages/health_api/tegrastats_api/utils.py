@@ -18,7 +18,7 @@ def run_tegrastats():
     dtprocess = DTProcess.get_instance()
 
     # Continuously read and print the output
-    while not dtprocess.is_shutdown():
+    while not dtprocess.is_shutdown:
         output = process.stdout.readline().decode("utf-8")
         if output == '' and process.poll() is not None:
             break
