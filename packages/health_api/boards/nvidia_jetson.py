@@ -42,6 +42,15 @@ class NvidiaJetson(GenericMachine):
             "gpu": True,
             "notes": ""
         },
+        "nvidia,jetson-nanonvidia,tegra210": {
+            "release_date": "Q1 2024",
+            "model": "Nano",
+            "revision": "B01",
+            "memory": 4 * GB,
+            "frequency": 1.4 * GHz,
+            "gpu": True,
+            "notes": "Blue Jetson Nano"
+        },
         "nvidia,p2597-0000+p3310-1000": {
             "release_date": "Q2 2017",
             "model": "TX2",
