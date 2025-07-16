@@ -32,10 +32,13 @@ def run_tegrastats():
 
 def _decode(output):
     gpu_temp_match = GPU_TEMP_RE.search(output)
-    KnowledgeBase.set("GPU_TEMP", float(gpu_temp_match.group(1)))
+    if gpu_temp_match:
+        KnowledgeBase.set("GPU_TEMP", float(gpu_temp_match.group(1)))
 
     gpu_usage_match = GPU_USAGE_RE.search(output)
-    KnowledgeBase.set("GPU_USAGE", float(gpu_usage_match.group(1)))
+    if gpu_usage_match:
+        KnowledgeBase.set("GPU_USAGE", float(gpu_usage_match.group(1)))
 
     gpu_power_match = GPU_POWER_RE.search(output)
-    KnowledgeBase.set("GPU_POWER", int(gpu_power_match.group(1))/1000.0)
+    if gpu_power_match:
+        KnowledgeBase.set("GPU_POWER", int(gpu_power_match.group(1))/1000.0)
