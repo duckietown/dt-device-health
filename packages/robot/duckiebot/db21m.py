@@ -76,7 +76,7 @@ class DB21M(Robot):
                 # this will check for /dev/ttyACM[0]
                 address=0,
                 supported=True,
-                test_service_name="robot_http_api_node/tests/battery",
+                test_service_name="ros_http_api_node/tests/battery",
             ),
             HardwareComponent(
                 bus=self.I2C_SW_TEGRA_ADAPTER_BUS,
@@ -139,7 +139,7 @@ class DB21M(Robot):
                 address=18,
                 supported=True,
                 detectable=False,
-                test_service_name="left_wheel_encoder_node/test",
+                test_service_name="left_wheel_encoder_driver_node/test",
             ),
             HardwareComponent(
                 bus=self.GPIO,
@@ -151,7 +151,7 @@ class DB21M(Robot):
                 address=19,
                 supported=True,
                 detectable=False,
-                test_service_name="right_wheel_encoder_node/test",
+                test_service_name="right_wheel_encoder_driver_node/test",
             ),
             HardwareComponent(
                 bus=self.I2C_HW_BUS_1,
@@ -197,7 +197,7 @@ class DB21M(Robot):
                 address="0",
                 supported=True,
                 detectable=False,
-                test_service_name="robot_http_api_node/tests/wifi",
+                test_service_name="ros_http_api_node/tests/wifi",
             ),
             HardwareComponent(
                 bus=self.HAT.bus,
