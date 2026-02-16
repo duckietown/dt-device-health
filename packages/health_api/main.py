@@ -1,6 +1,6 @@
 from threading import Thread
 from dt_class_utils import DTProcess, AppStatus
-from dt_robot_utils import get_robot_type, RobotType
+from dt_robot_utils import get_robot_type, RobotType, get_robot_hardware, RobotHardware
 
 from health_api.api import HealthAPI
 from health_api.constants import HEALTH_API_PORT
@@ -31,7 +31,17 @@ class HealthAPIApp(DTProcess):
         cback = lambda d: KnowledgeBase.set('battery', {'battery': {'present': True, **d}}, -1)
         self.battery = None
         robot_type = get_robot_type()
-        if robot_type in ROBOTS_WITH_BATTERY and not board_is_virtual():
+        robot_hardware = get_robot_hardware()
+        # Initialize battery only if:
+        # - Robot type supports battery AND
+        # - Not running in virtual mode AND
+        # - Not running on Orin Nano hardware (no battery controller)
+        should_init_battery = (
+            robot_type in ROBOTS_WITH_BATTERY and
+            not board_is_virtual() and
+            robot_hardware != RobotHardware.JETSON_ORIN_NANO
+        )
+        if should_init_battery:
             self.battery = Battery(cback, self.logger)
             self.register_shutdown_callback(self.battery.shutdown)
             self.battery.start()

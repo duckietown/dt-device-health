@@ -198,11 +198,18 @@ class GenericMachine(abc.ABC):
                 "temperature": <float, celsius>
             }
         """
-        themal_zones = psutil.sensors_temperatures()
-        temp = themal_zones.get(self.get_cpu_thermal_zone_name(), None)
-        if temp is None or len(temp) <= 0:
+        try:
+            thermal_zones = psutil.sensors_temperatures()
+            temp = thermal_zones.get(self.get_cpu_thermal_zone_name(), None)
+            if temp is None or len(temp) <= 0:
+                return {"temperature": 0.0}
+            return {"temperature": temp[0].current}
+        except (TypeError, ValueError, AttributeError) as e:
+            # Handle cases where thermal zones exist but return None/invalid data
+            # This can occur on some Jetson boards (e.g., Orin Nano) where thermal
+            # zone files exist but psutil cannot parse their contents
+            logger.warning(f"Failed to read temperature sensors: {e}")
             return {"temperature": 0.0}
-        return {"temperature": temp[0].current}
 
     @staticmethod
     def get_software():

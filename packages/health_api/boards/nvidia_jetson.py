@@ -77,6 +77,53 @@ class NvidiaJetson(GenericMachine):
             "frequency": 1.7 * GHz,
             "gpu": True,
             "notes": ""
+        },
+        # Jetson Orin Nano variants
+        # Compatible strings from /proc/device-tree/compatible
+        "nvidia,p3768-0000+p3767-0000": {
+            "release_date": "Q1 2023",
+            "model": "Orin Nano",
+            "revision": "8GB",
+            "memory": 8 * GB,
+            "frequency": 1.5 * GHz,
+            "gpu": True,
+            "notes": ""
+        },
+        "nvidia,p3768-0000+p3767-0001": {
+            "release_date": "Q1 2023",
+            "model": "Orin Nano",
+            "revision": "4GB",
+            "memory": 4 * GB,
+            "frequency": 1.5 * GHz,
+            "gpu": True,
+            "notes": ""
+        },
+        "nvidia,p3768-0000+p3767-0003": {
+            "release_date": "Q1 2023",
+            "model": "Orin Nano",
+            "revision": "8GB",
+            "memory": 8 * GB,
+            "frequency": 1.5 * GHz,
+            "gpu": True,
+            "notes": ""
+        },
+        "nvidia,p3768-0000+p3767-0004": {
+            "release_date": "Q1 2023",
+            "model": "Orin Nano",
+            "revision": "8GB",
+            "memory": 8 * GB,
+            "frequency": 1.5 * GHz,
+            "gpu": True,
+            "notes": ""
+        },
+        "nvidia,p3768-0000+p3767-0005": {
+            "release_date": "Q1 2023",
+            "model": "Orin Nano",
+            "revision": "8GB",
+            "memory": 8 * GB,
+            "frequency": 1.5 * GHz,
+            "gpu": True,
+            "notes": ""
         }
     }
 
@@ -152,6 +199,12 @@ class NvidiaJetson(GenericMachine):
         return cls.is_instance_of() and cls.is_4gb() and carrier_board == "B01"
 
     @classmethod
+    def is_orin_nano(cls):
+        """Check if this is a Jetson Orin Nano board"""
+        board = cls.get_hardware()
+        return cls.is_instance_of() and board["hardware"]["model"] == "Orin Nano"
+
+    @classmethod
     def get_hardware(cls):
         # get defaults
         res = {'hardware': cls._default_hardware_info()}
@@ -201,7 +254,7 @@ class NvidiaJetson(GenericMachine):
         mem_used = mem_info.get("NvMapMemUsed", {}).get('val', 0) * 1024
         mem_free = mem_info.get("NvMapMemFree", {}).get('val', 0) * 1024
         mem_total = mem_free + mem_used
-        mem_percentage = round(mem_used / mem_total * 100, 2)
+        mem_percentage = round(mem_used / mem_total * 100, 2) if mem_total > 0 else 0
         res = {
             "gpu": {
                 "percentage": KnowledgeBase.get("GPU_USAGE", 0),
