@@ -147,6 +147,28 @@ class I2CBusAnyOf(Bus):
 
 
 @dataclasses.dataclass
+class I2CBusAnyAddress(I2CBus):
+    """
+    I2C Bus that reports presence if any of the candidate_addresses are found on the bus.
+    The `address` argument to has() is ignored in favour of the candidate list.
+    Mirrors the multi-connector logic in the IMU driver for chips that ship at different
+    I2C addresses (e.g. MPU-6050 at 0x68 vs knock-off variant at 0x71).
+    """
+    candidate_addresses: List[Union[str, int]] = dataclasses.field(default_factory=list)
+
+    def has(self, address: Union[str, int]) -> bool:
+        if self._detections is None:
+            self.detect()
+        for addr in self.candidate_addresses:
+            a = hex(addr) if isinstance(addr, int) else addr
+            if self.parent and self.parent.has(a):
+                continue
+            if a in self._detections:
+                return True
+        return False
+
+
+@dataclasses.dataclass
 class USBDevice:
     bus: str
     device: str

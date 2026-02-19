@@ -1,5 +1,5 @@
 from typing import List
-from robot.types import HardwareComponent, ComponentType, I2CBus, BusType
+from robot.types import HardwareComponent, ComponentType, I2CBus, I2CBusAnyAddress, BusType
 from .db21m import DB21M
 
 
@@ -21,6 +21,8 @@ class DB26J(DB21M):
 
     # Bus 7: Screen, IMU, and sensors
     I2C_HW_BUS_7 = I2CBus(BusType.I2C, 7)
+    # IMU can appear at 0x68 (MPU-6050) or 0x71 (knockoff variant) — mirrors imu_driver config
+    I2C_HW_BUS_7_IMU = I2CBusAnyAddress(BusType.I2C, 7, candidate_addresses=["0x68", "0x71"])
 
     # Camera is on bus 2 (instead of bus 6 on DB21M)
     I2C_SW_TEGRA_ADAPTER_BUS = I2CBus(BusType.I2C, 2)
@@ -52,9 +54,12 @@ class DB26J(DB21M):
 
         # Update bus assignments and support status for components
         for component in components:
-            # Screen and IMU moved from bus 1 to bus 7
-            if component.key in ['screen', 'imu']:
+            # Screen moved from bus 1 to bus 7
+            if component.key == 'screen':
                 component.bus = self.I2C_HW_BUS_7
+            # IMU moved from bus 1 to bus 7; can be at 0x68 (MPU-6050) or 0x71 (knockoff)
+            elif component.key == 'imu':
+                component.bus = self.I2C_HW_BUS_7_IMU
             # Front bumper mux is optional hardware - mark as not supported
             elif component.key == 'front-bumper':
                 component.bus = self.I2C_SW_TEGRA_ADAPTER_BUS
