@@ -1,10 +1,12 @@
 import abc
 import dataclasses
 import datetime
+import glob
 import json
+import os
 import re
 import subprocess
-from typing import List
+from typing import List, Optional
 
 import psutil
 
@@ -190,6 +192,33 @@ class GenericMachine(abc.ABC):
             "serial_number": "ND"
         }
 
+    # Fallback thermal zone names to try if the primary one is not found
+    THERMAL_ZONE_FALLBACKS = ['cpu-thermal', 'cpu_thermal', 'thermal-fan-est', 'coretemp', 'soc-thermal']
+
+    @staticmethod
+    def _read_thermal_zone_sysfs(zone_type: str) -> Optional[float]:
+        """Read temperature directly from sysfs for a given thermal zone type.
+
+        This bypasses psutil, which crashes on boards where some thermal zones
+        return 'Resource temporarily unavailable' (e.g., Orin Nano cv0/cv1/cv2).
+
+        Args:
+            zone_type: The thermal zone type name (e.g., 'cpu-thermal').
+
+        Returns:
+            Temperature in Celsius, or None if the zone is not found or unreadable.
+        """
+        for zone_dir in sorted(glob.glob('/sys/class/thermal/thermal_zone*')):
+            try:
+                with open(os.path.join(zone_dir, 'type'), 'r') as f:
+                    if f.read().strip() != zone_type:
+                        continue
+                with open(os.path.join(zone_dir, 'temp'), 'r') as f:
+                    return int(f.read().strip()) / 1000.0
+            except (IOError, OSError, ValueError):
+                continue
+        return None
+
     def get_temperature(self):
         """
         Returns:
@@ -198,18 +227,37 @@ class GenericMachine(abc.ABC):
                 "temperature": <float, celsius>
             }
         """
+        # First, try psutil (works on Jetson Nano, Raspberry Pi, etc.)
         try:
             thermal_zones = psutil.sensors_temperatures()
-            temp = thermal_zones.get(self.get_cpu_thermal_zone_name(), None)
-            if temp is None or len(temp) <= 0:
-                return {"temperature": 0.0}
-            return {"temperature": temp[0].current}
-        except (TypeError, ValueError, AttributeError) as e:
-            # Handle cases where thermal zones exist but return None/invalid data
-            # This can occur on some Jetson boards (e.g., Orin Nano) where thermal
-            # zone files exist but psutil cannot parse their contents
-            logger.warning(f"Failed to read temperature sensors: {e}")
-            return {"temperature": 0.0}
+            if thermal_zones:
+                # try the board-specific thermal zone first
+                zone_name = self.get_cpu_thermal_zone_name()
+                temp = thermal_zones.get(zone_name, None)
+                # if not found, try common fallback zone names
+                if temp is None or len(temp) <= 0:
+                    for fallback in self.THERMAL_ZONE_FALLBACKS:
+                        temp = thermal_zones.get(fallback, None)
+                        if temp is not None and len(temp) > 0:
+                            break
+                if temp is not None and len(temp) > 0:
+                    current = temp[0].current
+                    if current is not None:
+                        return {"temperature": current}
+        except (TypeError, ValueError, AttributeError):
+            # psutil crashes on some boards (e.g., Orin Nano) where thermal zone
+            # files exist but some return 'Resource temporarily unavailable',
+            # causing float(None) inside psutil
+            pass
+
+        # Fallback: read directly from sysfs, trying primary zone then fallbacks
+        for zone_type in [self.get_cpu_thermal_zone_name()] + self.THERMAL_ZONE_FALLBACKS:
+            temp_c = self._read_thermal_zone_sysfs(zone_type)
+            if temp_c is not None:
+                return {"temperature": temp_c}
+
+        logger.warning("No readable thermal zone found")
+        return {"temperature": 0.0}
 
     @staticmethod
     def get_software():
