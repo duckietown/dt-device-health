@@ -5,6 +5,7 @@ from typing import Optional, List
 
 import jtop
 
+from dt_robot_utils import get_robot_hardware, RobotHardware
 from health_api.constants import GB, GHz
 from health_api.knowledge_base import KnowledgeBase
 from health_api.machine import GenericMachine, I2CBusDescriptor
@@ -136,6 +137,8 @@ class NvidiaJetson(GenericMachine):
         }
 
     def get_cpu_thermal_zone_name(self) -> str:
+        if get_robot_hardware() == RobotHardware.JETSON_ORIN_NANO:
+            return 'cpu-thermal'
         return 'thermal-fan-est'
 
     def get_firmware(self):
