@@ -1,6 +1,8 @@
 import logging
+import socket
+import struct
 import uuid
-from typing import Union
+from typing import Optional, Union
 
 from flask import Flask, Blueprint, abort, jsonify, request
 from flask_cors import CORS
@@ -73,6 +75,45 @@ def _trigger(trigger: str):
             return jsonify({'status': 'error', 'message': str(e)})
     # ---
     return jsonify({'status': 'ok'})
+
+
+def _detect_wifi_interface() -> str:
+    """Return the name of the WiFi interface.
+
+    On the Jetson Orin Nano, interfaces use predictable names (``wlx*`` for USB dongles, ``wlp*``
+    for PCI adapters) instead of the legacy ``wlan0``.
+    """
+    interfaces = [name for _, name in socket.if_nameindex()]
+    for prefix in ("wlx", "wlp"):
+        for interface in interfaces:
+            if interface.startswith(prefix):
+                return interface
+    return "wlan0"
+
+
+def _get_ipv4_address(interface: str) -> Optional[str]:
+    """Return the IPv4 address of a network interface, or None when it has none."""
+    import fcntl
+    siocgifaddr = 0x8915
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+        try:
+            ifreq = struct.pack("256s", interface[:15].encode("utf-8"))
+            response = fcntl.ioctl(sock.fileno(), siocgifaddr, ifreq)
+        except OSError:
+            return None
+    return socket.inet_ntoa(response[20:24])
+
+
+@api.route('/network/wifi')
+def _network_wifi():
+    """Name and IPv4 address of the WiFi interface (used by the dashboard's hardware test)."""
+    interface = _detect_wifi_interface()
+    exists = interface in [name for _, name in socket.if_nameindex()]
+    return jsonify({
+        'interface': interface,
+        'exists': exists,
+        'ipv4': _get_ipv4_address(interface) if exists else None,
+    })
 
 
 @api.route('/battery/history')
